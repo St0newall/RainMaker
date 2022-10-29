@@ -13,15 +13,20 @@ import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
 
-interface Updateable{
-    // clouds?
-    // pond?
-}
-class Pond implements Updateable{
 
-}
-class Cloud implements Updateable{
+class Pond implements Updatable{
 
+    @Override
+    public void update() {
+
+    }
+}
+class Cloud implements Updatable{
+
+    @Override
+    public void update() {
+
+    }
 }
 
 class Helipad extends GameObject{
@@ -121,7 +126,7 @@ interface Updatable {
     void update();
 }
 
-abstract class GameObject extends Group implements Updateable{
+abstract class GameObject extends Group implements Updatable{
     protected Translate myTranslate;
     protected Rotate myRotation;
     protected Scale myScale;
