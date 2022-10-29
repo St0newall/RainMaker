@@ -8,6 +8,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Scale;
+import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
 
 interface Updateable{
@@ -41,8 +44,6 @@ class Helipad extends GameObject{
 
 
     public Helipad() {
-
-
         heliPadSquare = new Rectangle(HELI_PAD_LENGTH, HELI_PAD_LENGTH,
                 Color.YELLOW);
         heliPadSquare.setTranslateX(HELI_PAD_STARTING_X);
@@ -77,22 +78,22 @@ class Helipad extends GameObject{
 
     }
 }
-
 class Helicopter extends GameObject{
     private static final double HELI_BASE_DIA = 15;
     private static final double HELI_TIP_LENGTH = 15;
     private static final double HELI_TIP_WIDTH = 5;
     Ellipse HelicopterBase;
     Rectangle HelicopterTip;
+    private static double SPEED = 0;
 
-    private static double ACCELERATION;
-    public void setAcceleration(double ACCELERATION){
-        this.ACCELERATION = ACCELERATION;
+    public void setSpeed(double acceleration){
+        this.SPEED = acceleration;
 
     }
-    public static double getAcceleration() {
-        return ACCELERATION;
+    public static double getSpeed() {
+        return SPEED;
     }
+
     public Helicopter(){
         HelicopterBase = new Ellipse(HELI_BASE_DIA, HELI_BASE_DIA);
         HelicopterBase.setFill(Color.YELLOW);
@@ -109,13 +110,56 @@ class Helicopter extends GameObject{
 
         add(HelicopterTip);
         add(HelicopterBase);
-
+    }
+    public void update(double acceleration) {
+        myTranslate.setY(myTranslate.getY()+acceleration);
     }
 
 
 }
+interface Updatable {
+    void update();
+}
 
-abstract class GameObject extends Group {
+abstract class GameObject extends Group implements Updateable{
+    protected Translate myTranslate;
+    protected Rotate myRotation;
+    protected Scale myScale;
+
+    public GameObject() {
+        this.setManaged(false);
+        myTranslate = new Translate();
+        myRotation = new Rotate();
+        myScale = new Scale();
+        this.getTransforms().addAll( myRotation, myTranslate,myScale);
+    }
+
+    public void rotate(double degrees) {
+        myRotation.setAngle(degrees);
+    }
+
+    public void translate(double x, double y) {
+        myTranslate.setX(x);
+        myTranslate.setY(y);
+    }
+
+    public void scale(double x, double y) {
+        myScale.setX(x);
+        myScale.setY(y);
+    }
+
+    public double getMyRotation() {
+        return myRotation.getAngle();
+    }
+
+    public void update() {
+        for (Node n : getChildren()) {
+            if (n instanceof Updatable)
+                ((Updatable) n).update();
+
+        }
+    }
+
     void add(Node node) {
         this.getChildren().add(node); // call this in each object that extend
         // this to add it to the root Group. (IN THE CONSTRUCTOR)
@@ -125,7 +169,7 @@ abstract class GameObject extends Group {
 class Game extends Pane{
     static Helicopter heli;
     Helipad pad;
-
+    static double constantTest;
 
     public Game(Helipad pad, Helicopter heli) {
         //TODO
@@ -134,8 +178,10 @@ class Game extends Pane{
     }
 
     static AnimationTimer loop = new AnimationTimer() {
+        double constant;
     public void handle(long now) {
-        heli.setTranslateY(heli.getAcceleration());
+
+        heli.update(heli.getSpeed());
 
         }
     };
@@ -144,8 +190,8 @@ class Game extends Pane{
 
 public class GameApp extends Application {
     private int SCENE_WIDTH = 400;
-    private int SCENE_HEIGHT = 600;
-
+    private int SCENE_HEIGHT = 800;
+    private double accel;
     public static void main(String[] args) {
         launch(args);
     }
@@ -153,9 +199,7 @@ public class GameApp extends Application {
     public void start(Stage primaryStage) {
         Helipad pad = new Helipad();
         Helicopter heli = new Helicopter();
-
         Game root = new Game(pad, heli);//Game extends Pane
-
 
         root.setScaleY(-1);
 
@@ -168,18 +212,25 @@ public class GameApp extends Application {
 
 
         scene.setFill(Color.BLACK);
-
         primaryStage.setResizable(false);
         primaryStage.show();
 
         scene.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.W){
+            if (e.getCode() == KeyCode.UP) {
                 System.out.println("W");
-                heli.setAcceleration(heli.getAcceleration()+5);
+                if (accel <= 10) {
+                    heli.setSpeed(accel);
+                    accel = accel + 0.1;
+                }
             }
+            if(e.getCode() == KeyCode.DOWN) {
+                if (accel >= -2) {
+                    heli.setSpeed(accel);
+                    accel = accel - 0.1;
+                }
+            }
+
         });
-
-
         Game.loop.start();
     }
 
