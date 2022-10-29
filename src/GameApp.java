@@ -1,3 +1,4 @@
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -55,22 +56,17 @@ class Helipad extends GameObject{
         innerHelipadSquare.setTranslateY(HELI_PAD_STARTING_Y+2.5); //magic
         // numbers for now until I get everything out. looking right.
 
-
         helipadCircle = new Ellipse(HELI_PAD_CIRCLE_DIA,
                 HELI_PAD_CIRCLE_DIA);
         helipadCircle.setFill(Color.YELLOW);
         helipadCircle.setTranslateX(HELI_PAD_STARTING_CIRCLE_X);
         helipadCircle.setTranslateY(HELI_PAD_STARTING_CIRCLE_Y);
 
-
-
         innerhelipadCircle = new Ellipse(HELI_PAD_CIRCLE_DIA-2.5,
                 HELI_PAD_CIRCLE_DIA-2.5);
         innerhelipadCircle.setFill(Color.BLACK);
         innerhelipadCircle.setTranslateX(HELI_PAD_STARTING_CIRCLE_X);
         innerhelipadCircle.setTranslateY(HELI_PAD_STARTING_CIRCLE_Y);
-
-
 
         add(heliPadSquare);
         add(innerHelipadSquare);
@@ -82,7 +78,6 @@ class Helipad extends GameObject{
 
 class Helicopter extends GameObject{
     private static final double HELI_BASE_DIA = 15;
-
     private static final double HELI_TIP_LENGTH = 15;
     private static final double HELI_TIP_WIDTH = 5;
     Ellipse HelicopterBase;
@@ -118,20 +113,27 @@ abstract class GameObject extends Group {
     }
 }
 
-class Game{
-    Pane root;
-    public Game(Pane root) {
-        this.root = root;
+class Game extends Pane{
+    private static double acceleration = 5;
+    static Helicopter heli;
+    Helipad pad;
 
 
+    public Game(Helipad pad, Helicopter heli) {
+        //TODO
+        this.pad = pad;
+        this.heli = heli;
     }
 
+    static AnimationTimer loop = new AnimationTimer() {
+    public void handle(long now) {
+        heli.setTranslateY(acceleration);
+        acceleration++;
 
-    //static AnimationTimer loop = new AnimationTimer() {
-    //public void handle(long now) {
+        }
 
-    //}
-    //};
+    };
+
 }
 
 public class GameApp extends Application {
@@ -141,31 +143,30 @@ public class GameApp extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-
     @Override
     public void start(Stage primaryStage) {
-        Pane root = new Pane();//root has to be pane not group? to invert. But
-        // WHY?
-        root.setScaleY(-1); //Professorr states that I will run into issue
-        // later if I do not invert.
-
-        Scene scene = new Scene(root,SCENE_WIDTH, SCENE_HEIGHT);
-        primaryStage.setScene(scene);
         Helipad pad = new Helipad();
         Helicopter heli = new Helicopter();
 
+        Game root = new Game(pad, heli);//Game extends Pane
 
+
+        root.setScaleY(-1);
+
+        Scene scene = new Scene(root,SCENE_WIDTH, SCENE_HEIGHT);
+
+        primaryStage.setScene(scene);
 
         root.getChildren().addAll(pad);
         root.getChildren().addAll(heli);
 
-        heli.setTranslateY(10);
 
-        Game gameStart = new Game(root);
         scene.setFill(Color.BLACK);
-
 
         primaryStage.setResizable(false);
         primaryStage.show();
+
+        Game.loop.start();
     }
+
 }
