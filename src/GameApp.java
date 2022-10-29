@@ -3,6 +3,7 @@ import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
@@ -22,6 +23,7 @@ class Cloud implements Updateable{
 
 class Helipad extends GameObject{
     private static final double HELI_PAD_LENGTH = 80; //LGTM
+
     Rectangle heliPadSquare;
     Rectangle innerHelipadSquare;
 
@@ -83,7 +85,14 @@ class Helicopter extends GameObject{
     Ellipse HelicopterBase;
     Rectangle HelicopterTip;
 
+    private static double ACCELERATION;
+    public void setAcceleration(double ACCELERATION){
+        this.ACCELERATION = ACCELERATION;
 
+    }
+    public static double getAcceleration() {
+        return ACCELERATION;
+    }
     public Helicopter(){
         HelicopterBase = new Ellipse(HELI_BASE_DIA, HELI_BASE_DIA);
         HelicopterBase.setFill(Color.YELLOW);
@@ -114,7 +123,6 @@ abstract class GameObject extends Group {
 }
 
 class Game extends Pane{
-    private static double acceleration = 5;
     static Helicopter heli;
     Helipad pad;
 
@@ -127,11 +135,9 @@ class Game extends Pane{
 
     static AnimationTimer loop = new AnimationTimer() {
     public void handle(long now) {
-        heli.setTranslateY(acceleration);
-        acceleration++;
+        heli.setTranslateY(heli.getAcceleration());
 
         }
-
     };
 
 }
@@ -165,6 +171,14 @@ public class GameApp extends Application {
 
         primaryStage.setResizable(false);
         primaryStage.show();
+
+        scene.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.W){
+                System.out.println("W");
+                heli.setAcceleration(heli.getAcceleration()+5);
+            }
+        });
+
 
         Game.loop.start();
     }
