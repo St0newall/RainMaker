@@ -1,5 +1,6 @@
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -53,7 +54,8 @@ class Helipad extends GameObject{
                 Color.YELLOW);
         heliPadSquare.setTranslateX(HELI_PAD_STARTING_X);
         heliPadSquare.setTranslateY(HELI_PAD_STARTING_Y);
-        //PICK UP HERE.
+
+
 
         innerHelipadSquare = new Rectangle(HELI_PAD_LENGTH-5,
                 HELI_PAD_LENGTH-5);//make it tiny bit smaller than the outer
@@ -93,13 +95,13 @@ class Helicopter extends GameObject{
 
     public void setSpeed(double acceleration){
         this.SPEED = acceleration;
-
     }
     public static double getSpeed() {
         return SPEED;
     }
 
     public Helicopter(){
+
         HelicopterBase = new Ellipse(HELI_BASE_DIA, HELI_BASE_DIA);
         HelicopterBase.setFill(Color.YELLOW);
 
@@ -112,18 +114,29 @@ class Helicopter extends GameObject{
         HelicopterTip.setTranslateX(207.5);
         HelicopterTip.setTranslateY(60);
 
-
         add(HelicopterTip);
         add(HelicopterBase);
+
+
     }
     public void update(double acceleration) {
         myTranslate.setY(myTranslate.getY()+acceleration);
+
     }
 
+    public double getMyRotation() {
+        return myRotation.getAngle();
+
+    }
+    public void setPivot(double currX, double currY) {
+        myRotation.setPivotX(currX);
+        myRotation.setPivotY(currY);
+    }
 
 }
 interface Updatable {
     void update();
+
 }
 
 abstract class GameObject extends Group implements Updatable{
@@ -161,13 +174,14 @@ abstract class GameObject extends Group implements Updatable{
         for (Node n : getChildren()) {
             if (n instanceof Updatable)
                 ((Updatable) n).update();
-
         }
+
     }
 
     void add(Node node) {
         this.getChildren().add(node); // call this in each object that extend
         // this to add it to the root Group. (IN THE CONSTRUCTOR)
+
     }
 }
 
@@ -185,9 +199,19 @@ class Game extends Pane{
     static AnimationTimer loop = new AnimationTimer() {
         double constant;
     public void handle(long now) {
-
         heli.update(heli.getSpeed());
+        // heli.setPivot(heli.myTranslate.getX(),heli.myTranslate.getY());
+        //System.out.println(heli.myTranslate.getX()+ " " +heli.myTranslate
+        // .getY());
 
+        heli.setPivot(210, heli.myTranslate.getY()+50);
+        //heli.rotate(constantTest);
+        //System.out.println(heli.myRotation.getPivotX() + "  " + heli
+        // .myRotation.getPivotY());
+       // heli.myRotation.rotate(constantTest, heli.myTranslate.getX(),
+        //  heli.myTranslate.getY());
+       // heli.getTransforms();
+        constantTest++;
         }
     };
 
@@ -197,6 +221,7 @@ public class GameApp extends Application {
     private int SCENE_WIDTH = 400;
     private int SCENE_HEIGHT = 800;
     private double accel;
+    private double rotation;
     public static void main(String[] args) {
         launch(args);
     }
@@ -227,12 +252,23 @@ public class GameApp extends Application {
                     heli.setSpeed(accel);
                     accel = accel + 0.1;
                 }
+
             }
             if(e.getCode() == KeyCode.DOWN) {
                 if (accel >= -2) {
                     heli.setSpeed(accel);
                     accel = accel - 0.1;
                 }
+            }
+            if(e.getCode() == KeyCode.LEFT) {
+                heli.rotate(rotation);
+                rotation = rotation+15;
+
+            }
+            if(e.getCode() == KeyCode.RIGHT) {
+                heli.rotate((rotation));
+                rotation = rotation-15;
+
             }
 
         });
