@@ -73,7 +73,6 @@ class Helipad extends GameObject{
         add(innerHelipadSquare);
         add(helipadCircle);
         add(innerhelipadCircle);
-
     }
 }
 class Helicopter extends GameObject{
@@ -145,9 +144,18 @@ class Helicopter extends GameObject{
 
     public void increaseRotationLeft() {
         ANGLE+=15;
+
+        if(ANGLE%24==0) {
+         ANGLE=0;
+        }
+
     }
     public void increateRotationRight() {
         ANGLE=-15;
+        if(ANGLE%24==0) {
+            ANGLE=0;
+
+        }
     }
 
     public double velocityX() {
@@ -228,7 +236,6 @@ class Game extends Pane{
 
         heli.setPivot(heli.myTranslate.getX(),
                 heli.myTranslate.getY());
-
 
         System.out.println(heli.myRotation.getAngle());
         }
