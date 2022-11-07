@@ -80,14 +80,15 @@ class Helicopter extends GameObject{
     private static final double HELI_BASE_DIA = 15;
     private static final double HELI_TIP_LENGTH = 15;
     private static final double HELI_TIP_WIDTH = 5;
-    double FUEL = 25000;
+
     Ellipse HelicopterBase;
-
-
     Rectangle HelicopterTip;
+    Text fuel;
     private static double SPEED = 0;
-
+    private static double FUEL = 25000;
     private static double ANGLE = 0;
+
+    boolean ignitionPress;
 
     public void setSpeed(double acceleration) {
         this.SPEED = acceleration;
@@ -108,6 +109,20 @@ class Helicopter extends GameObject{
         return SPEED;
     }
 
+    public void setFuel(double fuel){
+        this.FUEL = fuel;
+    }
+    public double getFuel() {return FUEL;}
+
+    boolean isIgnitionPress(){
+        return ignitionPress;
+    }
+
+    public void setIgnitionPress(){
+        ignitionPress = true;
+    }
+
+
 
     public Helicopter(){
         HelicopterBase = new Ellipse(HELI_BASE_DIA, HELI_BASE_DIA);
@@ -122,14 +137,12 @@ class Helicopter extends GameObject{
         HelicopterTip.setTranslateX(207.5);
         HelicopterTip.setTranslateY(60);
 
-        Text fuel = new Text("F:"+ FUEL);
+        fuel = new Text("F:"+ FUEL);
         fuel.setFill(Color.YELLOW);
         fuel.setX(200);
         fuel.setY(30);
         fuel.setScaleY(-1);
         add(fuel);
-
-
 
         add(HelicopterTip);
         add(HelicopterBase);
@@ -162,6 +175,7 @@ class Helicopter extends GameObject{
         }
 
     }
+
     public void increateRotationRight() {
         ANGLE=-15;
         if(ANGLE%24==0) {
@@ -180,7 +194,9 @@ class Helicopter extends GameObject{
         return SPEED * Math.sin(radangY);
     }
 
-
+    public void decreaseFuel(){
+        fuel.setText("F:"+ FUEL);
+    }
 
 }
 interface Updatable {
@@ -224,7 +240,6 @@ abstract class GameObject extends Group implements Updatable{
                 ((Updatable) n).update();
         }
     }
-
     void add(Node node) {
         this.getChildren().add(node); // call this in each object that extend
         // this to add it to the root Group. (IN THE CONSTRUCTOR)
@@ -234,7 +249,6 @@ abstract class GameObject extends Group implements Updatable{
 class Game extends Pane{
     static Helicopter heli;
     Helipad pad;
-    static double constantTest;
 
     public Game(Helipad pad, Helicopter heli) {
         this.pad = pad;
@@ -244,8 +258,12 @@ class Game extends Pane{
     static AnimationTimer loop = new AnimationTimer() {
         double constant;
     public void handle(long now) {
-        heli.update();
 
+        if(heli.isIgnitionPress()==true) {
+            heli.decreaseFuel();
+            heli.setFuel(heli.getFuel()-1);
+        }
+        heli.update();
         heli.setPivot(heli.myTranslate.getX(),
                 heli.myTranslate.getY());
 
@@ -258,6 +276,8 @@ public class GameApp extends Application {
     private int SCENE_WIDTH = 400;
     private int SCENE_HEIGHT = 800;
     private double rotation;
+    private boolean ignitionPressed = false;
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -282,26 +302,31 @@ public class GameApp extends Application {
         primaryStage.setResizable(false);
         primaryStage.show();
 
+
         scene.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.UP) {
-                heli.increaseAcceleration();
+            if(e.getCode() == KeyCode.I) {
+                heli.setIgnitionPress();
+            }
+            System.out.println(heli.isIgnitionPress());
+                if(heli.isIgnitionPress()==true){
+                    if (e.getCode() == KeyCode.UP) {
+                    heli.increaseAcceleration();
+                    }
+                    if (e.getCode() == KeyCode.DOWN) {
+                    heli.decreaseAcceleration();
+                    }
+                    if (e.getCode() == KeyCode.LEFT) {
+                    heli.rotate(rotation);
+                    heli.increaseRotationLeft();
+                    rotation = rotation + 15;
+                    }
+                    if (e.getCode() == KeyCode.RIGHT) {
+                    heli.rotate((rotation));
+                    heli.increateRotationRight();
+                    rotation = rotation - 15;
+                    }
 
-            }
-            if(e.getCode() == KeyCode.DOWN) {
-                heli.decreaseAcceleration();
-            }
-            if(e.getCode() == KeyCode.LEFT) {
-                heli.rotate(rotation);
-                heli.increaseRotationLeft();
-                rotation = rotation + 15;
-
-            }
-            if(e.getCode() == KeyCode.RIGHT) {
-                heli.rotate((rotation));
-                heli.increateRotationRight();
-                rotation = rotation - 15;
-
-            }
+                }
         });
         Game.loop.start();
     }
