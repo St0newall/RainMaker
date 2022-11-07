@@ -8,6 +8,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
@@ -79,7 +80,9 @@ class Helicopter extends GameObject{
     private static final double HELI_BASE_DIA = 15;
     private static final double HELI_TIP_LENGTH = 15;
     private static final double HELI_TIP_WIDTH = 5;
+    double FUEL = 25000;
     Ellipse HelicopterBase;
+
 
     Rectangle HelicopterTip;
     private static double SPEED = 0;
@@ -118,6 +121,15 @@ class Helicopter extends GameObject{
 
         HelicopterTip.setTranslateX(207.5);
         HelicopterTip.setTranslateY(60);
+
+        Text fuel = new Text("F:"+ FUEL);
+        fuel.setFill(Color.YELLOW);
+        fuel.setX(200);
+        fuel.setY(30);
+        fuel.setScaleY(-1);
+        add(fuel);
+
+
 
         add(HelicopterTip);
         add(HelicopterBase);
