@@ -39,8 +39,17 @@ class Pond extends GameObject implements Updatable{
 }
 class Cloud extends GameObject implements Updatable{
     Ellipse Cloud;
+    Random rand = new Random();
+    int rand_intY = rand.nextInt(200,800);
+    int rand_intX = rand.nextInt(0,400);
+
     public Cloud(){
-        Ellipse cloud;
+        Cloud = new Ellipse(45,45);
+        Cloud.setTranslateY(rand_intY);
+        Cloud.setTranslateX(rand_intX);
+        Cloud.setFill(Color.WHITE);
+
+        add(Cloud);
 
     }
     @Override
@@ -311,6 +320,7 @@ public class GameApp extends Application {
         Helipad pad = new Helipad();
         Helicopter heli = new Helicopter();
         Pond pond = new Pond();
+        Cloud cloud = new Cloud();
         Game root = new Game(pad, heli);//Game extends Pane
 
         root.setScaleY(-1);
@@ -322,7 +332,7 @@ public class GameApp extends Application {
         root.getChildren().addAll(pad);
         root.getChildren().addAll(heli);
         root.getChildren().addAll(pond);
-
+        root.getChildren().addAll(cloud);
 
         scene.setFill(Color.BLACK);
         primaryStage.setResizable(false);
