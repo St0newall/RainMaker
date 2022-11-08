@@ -14,14 +14,39 @@ import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
 
-class Pond implements Updatable{
+import java.util.Random;
+
+class Pond extends GameObject implements Updatable{
+    Ellipse Pond;
+    Random rand = new Random();
+
+    int rand_intY = rand.nextInt(200,800);
+    int rand_intX = rand.nextInt(0,400);
+
+    public Pond(){
+        Pond = new Ellipse(30,30);
+        Pond.setTranslateY(rand_intY);
+        Pond.setTranslateX(rand_intX);
+        Pond.setFill(Color.BLUE);
+
+        add(Pond);
+    }
     @Override
     public void update() {
+
+
     }
 }
-class Cloud implements Updatable{
+class Cloud extends GameObject implements Updatable{
+    Ellipse Cloud;
+    public Cloud(){
+        Ellipse cloud;
+
+    }
     @Override
     public void update() {
+
+
     }
 }
 
@@ -266,9 +291,9 @@ class Game extends Pane{
         heli.update();
         heli.setPivot(heli.myTranslate.getX(),
                 heli.myTranslate.getY());
-
         System.out.println(heli.myRotation.getAngle());
         }
+
     };
 }
 
@@ -276,7 +301,6 @@ public class GameApp extends Application {
     private int SCENE_WIDTH = 400;
     private int SCENE_HEIGHT = 800;
     private double rotation;
-    private boolean ignitionPressed = false;
 
     public static void main(String[] args) {
         launch(args);
@@ -286,6 +310,7 @@ public class GameApp extends Application {
     public void start(Stage primaryStage) {
         Helipad pad = new Helipad();
         Helicopter heli = new Helicopter();
+        Pond pond = new Pond();
         Game root = new Game(pad, heli);//Game extends Pane
 
         root.setScaleY(-1);
@@ -296,6 +321,7 @@ public class GameApp extends Application {
 
         root.getChildren().addAll(pad);
         root.getChildren().addAll(heli);
+        root.getChildren().addAll(pond);
 
 
         scene.setFill(Color.BLACK);
@@ -308,6 +334,7 @@ public class GameApp extends Application {
                 heli.setIgnitionPress();
             }
             System.out.println(heli.isIgnitionPress());
+
                 if(heli.isIgnitionPress()==true){
                     if (e.getCode() == KeyCode.UP) {
                     heli.increaseAcceleration();
