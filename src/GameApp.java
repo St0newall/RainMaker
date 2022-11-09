@@ -54,25 +54,19 @@ class Cloud extends GameObject implements Updatable{
     }
     @Override
     public void update() {
-
-
     }
 }
 
 class Helipad extends GameObject{
-    private static final double HELI_PAD_LENGTH = 80; //LGTM
-
+    private static final double HELI_PAD_LENGTH = 80;
     Rectangle heliPadSquare;
     Rectangle innerHelipadSquare;
     Ellipse helipadCircle;
     Ellipse innerhelipadCircle;
     private static final double HELI_PAD_STARTING_X = 170; //looks center
     private static final double HELI_PAD_STARTING_Y = 10;
-
     private  static final double HELI_PAD_CIRCLE_DIA = 35;
-
     private static final double HELI_PAD_STARTING_CIRCLE_X = 210;
-
     private static final double HELI_PAD_STARTING_CIRCLE_Y = 50;
 
 
@@ -131,15 +125,16 @@ class Helicopter extends GameObject{
     public void increaseAcceleration(){
       if (SPEED <= 10) {
           SPEED += 0.1;
+
       }
+
     }
     public void decreaseAcceleration(){
         if (SPEED >= -2) {
             SPEED -= 0.1;
         }
     }
-
-    public static double getSpeed() {
+    public double getSpeed() {
         return SPEED;
     }
 
@@ -155,8 +150,6 @@ class Helicopter extends GameObject{
     public void setIgnitionPress(){
         ignitionPress = true;
     }
-
-
 
     public Helicopter(){
         HelicopterBase = new Ellipse(HELI_BASE_DIA, HELI_BASE_DIA);
@@ -176,8 +169,8 @@ class Helicopter extends GameObject{
         fuel.setX(200);
         fuel.setY(30);
         fuel.setScaleY(-1);
-        add(fuel);
 
+        add(fuel);
         add(HelicopterTip);
         add(HelicopterBase);
     }
@@ -185,8 +178,8 @@ class Helicopter extends GameObject{
 
 
     public void update() {
-        myTranslate.setY(myTranslate.getY()+velocityY());
-        myTranslate.setX(myTranslate.getX()+velocityX());
+        myTranslate.setY(myTranslate.getY()+deltaY());
+        myTranslate.setX(myTranslate.getX()+deltaX());
 
     }
 
@@ -202,41 +195,35 @@ class Helicopter extends GameObject{
     }
 
     public void increaseRotationLeft() {
-        ANGLE+=15;
-
-        if(ANGLE%24==0) {
-         ANGLE=0;
-        }
-
+        ANGLE -= 15 ;
     }
 
     public void increateRotationRight() {
-        ANGLE=-15;
-        if(ANGLE%24==0) {
-            ANGLE=0;
-
-        }
+        ANGLE += 15;
     }
 
-    public double velocityX() {
-        double radang = Math.toRadians(ANGLE);
-        return SPEED * Math.cos(radang);
+    public double deltaX() {
+        return SPEED * Math.cos(calculateAng());
+
     }
 
-    public double velocityY() {
-        double radangY = Math.toRadians(ANGLE);
-        return SPEED * Math.sin(radangY);
+    public double deltaY() {
+        return SPEED * Math.sin(calculateAng());
     }
 
     public void decreaseFuel(){
         fuel.setText("F:"+ FUEL);
     }
+    public double calculateAng(){
+        double absAngle = (450-ANGLE)%360;
+        return Math.toRadians(absAngle);
+    }
 
 }
 interface Updatable {
     void update();
-
 }
+
 abstract class GameObject extends Group implements Updatable{
     protected Translate myTranslate;
     protected Rotate myRotation;
@@ -253,7 +240,6 @@ abstract class GameObject extends Group implements Updatable{
     public void rotate(double degrees) {
         myRotation.setAngle(degrees);
     }
-
     public void translate(double x, double y) {
         myTranslate.setX(x);
         myTranslate.setY(y);
@@ -290,19 +276,14 @@ class Game extends Pane{
     }
 
     static AnimationTimer loop = new AnimationTimer() {
-        double constant;
     public void handle(long now) {
-
         if(heli.isIgnitionPress()==true) {
             heli.decreaseFuel();
             heli.setFuel(heli.getFuel()-1);
         }
         heli.update();
-        heli.setPivot(heli.myTranslate.getX(),
-                heli.myTranslate.getY());
-        System.out.println(heli.myRotation.getAngle());
+        heli.setPivot(heli.myTranslate.getX(), heli.myTranslate.getY());
         }
-
     };
 }
 
@@ -322,47 +303,42 @@ public class GameApp extends Application {
         Pond pond = new Pond();
         Cloud cloud = new Cloud();
         Game root = new Game(pad, heli);//Game extends Pane
-
         root.setScaleY(-1);
 
         Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
-
         primaryStage.setScene(scene);
 
         root.getChildren().addAll(pad);
         root.getChildren().addAll(heli);
         root.getChildren().addAll(pond);
         root.getChildren().addAll(cloud);
-
         scene.setFill(Color.BLACK);
         primaryStage.setResizable(false);
         primaryStage.show();
+
 
 
         scene.setOnKeyPressed(e -> {
             if(e.getCode() == KeyCode.I) {
                 heli.setIgnitionPress();
             }
-            System.out.println(heli.isIgnitionPress());
-
                 if(heli.isIgnitionPress()==true){
                     if (e.getCode() == KeyCode.UP) {
-                    heli.increaseAcceleration();
+                        heli.increaseAcceleration();
                     }
                     if (e.getCode() == KeyCode.DOWN) {
-                    heli.decreaseAcceleration();
+                        heli.decreaseAcceleration();
                     }
                     if (e.getCode() == KeyCode.LEFT) {
-                    heli.rotate(rotation);
-                    heli.increaseRotationLeft();
-                    rotation = rotation + 15;
+                        rotation = rotation + 15;
+                        heli.rotate(rotation);
+                        heli.increaseRotationLeft();
                     }
                     if (e.getCode() == KeyCode.RIGHT) {
-                    heli.rotate((rotation));
-                    heli.increateRotationRight();
-                    rotation = rotation - 15;
+                        rotation = rotation - 15;
+                        heli.rotate(rotation);
+                        heli.increateRotationRight();
                     }
-
                 }
         });
         Game.loop.start();
