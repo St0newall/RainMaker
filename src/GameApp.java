@@ -118,16 +118,10 @@ class Helicopter extends GameObject{
 
     boolean ignitionPress;
 
-    public void setSpeed(double acceleration) {
-        this.SPEED = acceleration;
-    }
-
     public void increaseAcceleration(){
       if (SPEED <= 10) {
           SPEED += 0.1;
-
       }
-
     }
     public void decreaseAcceleration(){
         if (SPEED >= -2) {
@@ -190,10 +184,6 @@ class Helicopter extends GameObject{
         myRotation.setPivotX(currX+210);
         myRotation.setPivotY(currY+50);
     }
-    public double getAcceleration(){
-          return SPEED;
-    }
-
     public void increaseRotationLeft() {
         ANGLE -= 15 ;
     }
