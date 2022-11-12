@@ -188,19 +188,19 @@ class Helicopter extends GameObject{
         myRotation.setPivotY(currY+50);
     }
     public void increaseRotationLeft() {
-        if(ignitionPress) {
-            HEADING += 15;
-            ANGLE -= 15;
-            Game.heli.rotate(HEADING);
-        }
+            if(SPEED>.1 || SPEED <- .1) {
+                HEADING += 15;
+                ANGLE -= 15;
+                Game.heli.rotate(HEADING);
+            }
     }
 
     public void increateRotationRight() {
-        if(ignitionPress) {
-            HEADING -= 15;
-            ANGLE += 15;
-            Game.heli.rotate(HEADING);
-        }
+            if(SPEED>.1 || SPEED < -.1) {
+                HEADING -= 15;
+                ANGLE += 15;
+                Game.heli.rotate(HEADING);
+            }
     }
 
     public double deltaX() {
