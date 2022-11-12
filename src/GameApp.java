@@ -108,30 +108,32 @@ class Helicopter extends GameObject{
     private static final double HELI_BASE_DIA = 15;
     private static final double HELI_TIP_LENGTH = 15;
     private static final double HELI_TIP_WIDTH = 5;
-
     Ellipse HelicopterBase;
     Rectangle HelicopterTip;
     Text fuel;
     private static double SPEED = 0;
     private static double FUEL = 25000;
     private static double ANGLE = 0;
-
+    private static double HEADING = 0;
     boolean ignitionPress;
 
     public void increaseAcceleration(){
-      if (SPEED <= 10) {
-          SPEED += 0.1;
-      }
+        if(ignitionPress) {
+            if (SPEED <= 10) {
+                SPEED += 0.1;
+            }
+        }
     }
     public void decreaseAcceleration(){
-        if (SPEED >= -2) {
-            SPEED -= 0.1;
+        if(ignitionPress) {
+            if (SPEED >= -2) {
+                SPEED -= 0.1;
+            }
         }
     }
     public double getSpeed() {
         return SPEED;
     }
-
     public void setFuel(double fuel){
         this.FUEL = fuel;
     }
@@ -141,11 +143,15 @@ class Helicopter extends GameObject{
         return ignitionPress;
     }
 
-    public void setIgnitionPress(){
-        ignitionPress = true;
+    public void setIgitionPress(){
+        if(-.1<SPEED && SPEED<.1) {
+            ignitionPress = !ignitionPress;
+        }
     }
 
     public Helicopter(){
+        ignitionPress = false;
+
         HelicopterBase = new Ellipse(HELI_BASE_DIA, HELI_BASE_DIA);
         HelicopterBase.setFill(Color.YELLOW);
 
@@ -169,12 +175,9 @@ class Helicopter extends GameObject{
         add(HelicopterBase);
     }
 
-
-
     public void update() {
         myTranslate.setY(myTranslate.getY()+deltaY());
         myTranslate.setX(myTranslate.getX()+deltaX());
-
     }
 
     public double getMyRotation() {
@@ -185,18 +188,24 @@ class Helicopter extends GameObject{
         myRotation.setPivotY(currY+50);
     }
     public void increaseRotationLeft() {
-        ANGLE -= 15 ;
+        if(ignitionPress) {
+            HEADING += 15;
+            ANGLE -= 15;
+            Game.heli.rotate(HEADING);
+        }
     }
 
     public void increateRotationRight() {
-        ANGLE += 15;
+        if(ignitionPress) {
+            HEADING -= 15;
+            ANGLE += 15;
+            Game.heli.rotate(HEADING);
+        }
     }
 
     public double deltaX() {
         return SPEED * Math.cos(calculateAng());
-
     }
-
     public double deltaY() {
         return SPEED * Math.sin(calculateAng());
     }
@@ -208,7 +217,6 @@ class Helicopter extends GameObject{
         double absAngle = (450-ANGLE)%360;
         return Math.toRadians(absAngle);
     }
-
 }
 interface Updatable {
     void update();
@@ -234,7 +242,6 @@ abstract class GameObject extends Group implements Updatable{
         myTranslate.setX(x);
         myTranslate.setY(y);
     }
-
     public void scale(double x, double y) {
         myScale.setX(x);
         myScale.setY(y);
@@ -259,12 +266,10 @@ abstract class GameObject extends Group implements Updatable{
 class Game extends Pane{
     static Helicopter heli;
     Helipad pad;
-
     public Game(Helipad pad, Helicopter heli) {
         this.pad = pad;
         this.heli = heli;
     }
-
     static AnimationTimer loop = new AnimationTimer() {
     public void handle(long now) {
         if(heli.isIgnitionPress()==true) {
@@ -273,6 +278,7 @@ class Game extends Pane{
         }
         heli.update();
         heli.setPivot(heli.myTranslate.getX(), heli.myTranslate.getY());
+        System.out.println(heli.getSpeed());
         }
     };
 }
@@ -280,7 +286,6 @@ class Game extends Pane{
 public class GameApp extends Application {
     private int SCENE_WIDTH = 400;
     private int SCENE_HEIGHT = 800;
-    private double rotation;
 
     public static void main(String[] args) {
         launch(args);
@@ -297,7 +302,6 @@ public class GameApp extends Application {
 
         Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
         primaryStage.setScene(scene);
-
         root.getChildren().addAll(pad);
         root.getChildren().addAll(heli);
         root.getChildren().addAll(pond);
@@ -306,30 +310,22 @@ public class GameApp extends Application {
         primaryStage.setResizable(false);
         primaryStage.show();
 
-
-
         scene.setOnKeyPressed(e -> {
             if(e.getCode() == KeyCode.I) {
-                heli.setIgnitionPress();
+                heli.setIgitionPress();
             }
-                if(heli.isIgnitionPress()==true){
-                    if (e.getCode() == KeyCode.UP) {
-                        heli.increaseAcceleration();
-                    }
-                    if (e.getCode() == KeyCode.DOWN) {
-                        heli.decreaseAcceleration();
-                    }
-                    if (e.getCode() == KeyCode.LEFT) {
-                        rotation = rotation + 15;
-                        heli.rotate(rotation);
-                        heli.increaseRotationLeft();
-                    }
-                    if (e.getCode() == KeyCode.RIGHT) {
-                        rotation = rotation - 15;
-                        heli.rotate(rotation);
-                        heli.increateRotationRight();
-                    }
-                }
+            if (e.getCode() == KeyCode.UP) {
+                heli.increaseAcceleration();
+            }
+            if (e.getCode() == KeyCode.DOWN) {
+                heli.decreaseAcceleration();
+            }
+            if (e.getCode() == KeyCode.LEFT) {
+                heli.increaseRotationLeft();
+            }
+            if (e.getCode() == KeyCode.RIGHT) {
+                heli.increateRotationRight();
+            }
         });
         Game.loop.start();
     }
