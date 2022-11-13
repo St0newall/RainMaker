@@ -48,9 +48,7 @@ class Cloud extends GameObject implements Updatable{
         Cloud.setTranslateY(rand_intY);
         Cloud.setTranslateX(rand_intX);
         Cloud.setFill(Color.WHITE);
-
         add(Cloud);
-
     }
 
     public Ellipse getCloud(){
@@ -270,27 +268,31 @@ abstract class GameObject extends Group implements Updatable{
         // this to add it to the root Group. (IN THE CONSTRUCTOR)
     }
 }
-
 class Game extends Pane{
     static Helicopter heli;
-    Helipad pad;
 
+    Helipad pad;
+    static Cloud cloud;
     public Game() {
         super.setScaleY(-1);
     }
-    public boolean isHelicopterCollidingWithCloud(){
-       // return cloud.getCloud().getBoundsInParent().intersects(heli.)
-        return true;
+    public static boolean isHelicopterCollidingWithCloud(){
+        return cloud.getCloud().getBoundsInParent().intersects(heli.getHeli()
+                .getBoundsInParent());
     }
     static AnimationTimer loop = new AnimationTimer() {
-    public void handle(long now) {
-        if(heli.isIgnitionPress()==true) {
-            heli.decreaseFuel();
-            heli.setFuel(heli.getFuel()-1);
-        }
-        heli.update();
-        heli.setPivot(heli.myTranslate.getX(), heli.myTranslate.getY());
-        System.out.println(heli.getSpeed());
+        public void handle(long now) {
+            if (heli.isIgnitionPress() == true) {
+                heli.decreaseFuel();
+                heli.setFuel(heli.getFuel() - 1);
+            }
+            heli.update();
+            heli.setPivot(heli.myTranslate.getX(), heli.myTranslate.getY());
+
+            if (isHelicopterCollidingWithCloud() == true) {
+
+            }
+
         }
     };
 
@@ -298,7 +300,7 @@ class Game extends Pane{
         super.getChildren().clear();
         super.getChildren().setAll(
                 new Helipad(),
-                new Cloud(),
+                cloud = new Cloud(),
                 new Pond(),
                 heli = new Helicopter()
         );
