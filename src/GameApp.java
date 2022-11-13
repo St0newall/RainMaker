@@ -40,6 +40,8 @@ class Pond extends GameObject implements Updatable{
 class Cloud extends GameObject implements Updatable{
     Ellipse Cloud;
     Random rand = new Random();
+    int pCounter = 0;
+    Text precipitation;
     int rand_intY = rand.nextInt(200,800);
     int rand_intX = rand.nextInt(0,400);
 
@@ -48,8 +50,19 @@ class Cloud extends GameObject implements Updatable{
         Cloud.setTranslateY(rand_intY);
         Cloud.setTranslateX(rand_intX);
         Cloud.setFill(Color.WHITE);
+
+        precipitation = new Text ("%"+ pCounter);
+        precipitation.setFill(Color.BLUE);
+        precipitation.setX(Cloud.getTranslateX() - 7);
+        precipitation.setY(Cloud.getTranslateY() + 5);
+        precipitation.setScaleY(-1);
+
         add(Cloud);
+        add(precipitation);
     }
+
+
+
 
     public Ellipse getCloud(){
         return Cloud;
@@ -279,12 +292,12 @@ abstract class GameObject extends Group implements Updatable{
 }
 class Game extends Pane{
     static Helicopter heli;
-
     Helipad pad;
     static Cloud cloud;
     public Game() {
         super.setScaleY(-1);
     }
+
     public static boolean isHelicopterCollidingWithCloud(){
         return cloud.getCloud().getBoundsInParent().intersects(heli.getHeli()
                 .getBoundsInParent());
@@ -304,7 +317,9 @@ class Game extends Pane{
 
         }
     };
+    public static void Seeding() {
 
+    }
     public void init(){
         super.getChildren().clear();
         super.getChildren().setAll(
@@ -359,7 +374,8 @@ public class GameApp extends Application {
                 Game.heli.setSEEDING();
             }
             if(Game.heli.isSEEDING()){
-                if(e.getCode() == KeyCode.SPACE) {
+                if(e.getCode() == KeyCode.SPACE){
+                    Game.Seeding();
                     System.out.println("SEEDING");
                 }
             }
