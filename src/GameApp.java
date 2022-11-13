@@ -52,11 +52,14 @@ class Cloud extends GameObject implements Updatable{
         add(Cloud);
 
     }
+
+    public Ellipse getCloud(){
+        return Cloud;
+    }
     @Override
     public void update() {
     }
 }
-
 class Helipad extends GameObject{
     private static final double HELI_PAD_LENGTH = 80;
     Rectangle heliPadSquare;
@@ -106,15 +109,15 @@ class Helipad extends GameObject{
 }
 class Helicopter extends GameObject{
     private static final double HELI_BASE_DIA = 15;
-    private static final double HELI_TIP_LENGTH = 15;
+    private static final double HELI_TIP_LENGTH = 35;
     private static final double HELI_TIP_WIDTH = 5;
     Ellipse HelicopterBase;
     Rectangle HelicopterTip;
     Text fuel;
-    private static double SPEED = 0;
-    private static double FUEL = 25000;
-    private static double ANGLE = 0;
-    private static double HEADING = 0;
+    private static double SPEED;
+    private static double FUEL;
+    private static double ANGLE;
+    private static double HEADING;
     boolean ignitionPress;
 
     public void increaseAcceleration(){
@@ -151,13 +154,15 @@ class Helicopter extends GameObject{
 
     public Helicopter(){
         ignitionPress = false;
+        SPEED = 0;
+        ANGLE = 0;
+        FUEL = 2500;
 
         HelicopterBase = new Ellipse(HELI_BASE_DIA, HELI_BASE_DIA);
         HelicopterBase.setFill(Color.YELLOW);
 
         HelicopterBase.setTranslateX(210);
         HelicopterBase.setTranslateY(50);
-
         HelicopterTip = new Rectangle(HELI_TIP_WIDTH, HELI_TIP_LENGTH);
         HelicopterTip.setFill(Color.YELLOW);
 
@@ -217,6 +222,10 @@ class Helicopter extends GameObject{
         double absAngle = (450-ANGLE)%360;
         return Math.toRadians(absAngle);
     }
+
+    public Helicopter getHeli(){
+        return this;
+    }
 }
 interface Updatable {
     void update();
@@ -226,7 +235,6 @@ abstract class GameObject extends Group implements Updatable{
     protected Translate myTranslate;
     protected Rotate myRotation;
     protected Scale myScale;
-
     public GameObject() {
         this.setManaged(false);
         myTranslate = new Translate();
@@ -266,9 +274,13 @@ abstract class GameObject extends Group implements Updatable{
 class Game extends Pane{
     static Helicopter heli;
     Helipad pad;
-    public Game(Helipad pad, Helicopter heli) {
-        this.pad = pad;
-        this.heli = heli;
+
+    public Game() {
+        super.setScaleY(-1);
+    }
+    public boolean isHelicopterCollidingWithCloud(){
+       // return cloud.getCloud().getBoundsInParent().intersects(heli.)
+        return true;
     }
     static AnimationTimer loop = new AnimationTimer() {
     public void handle(long now) {
@@ -281,6 +293,17 @@ class Game extends Pane{
         System.out.println(heli.getSpeed());
         }
     };
+
+    public void init(){
+        super.getChildren().clear();
+        super.getChildren().setAll(
+                new Helipad(),
+                new Cloud(),
+                new Pond(),
+                heli = new Helicopter()
+        );
+    }
+
 }
 
 public class GameApp extends Application {
@@ -293,38 +316,33 @@ public class GameApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Helipad pad = new Helipad();
-        Helicopter heli = new Helicopter();
-        Pond pond = new Pond();
-        Cloud cloud = new Cloud();
-        Game root = new Game(pad, heli);//Game extends Pane
+        Game root = new Game();//Game extends Pane
         root.setScaleY(-1);
-
+        root.init();
         Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
         primaryStage.setScene(scene);
-        root.getChildren().addAll(pad);
-        root.getChildren().addAll(heli);
-        root.getChildren().addAll(pond);
-        root.getChildren().addAll(cloud);
         scene.setFill(Color.BLACK);
         primaryStage.setResizable(false);
         primaryStage.show();
 
         scene.setOnKeyPressed(e -> {
             if(e.getCode() == KeyCode.I) {
-                heli.setIgitionPress();
+                Game.heli.setIgitionPress();
             }
             if (e.getCode() == KeyCode.UP) {
-                heli.increaseAcceleration();
+                Game.heli.increaseAcceleration();
             }
             if (e.getCode() == KeyCode.DOWN) {
-                heli.decreaseAcceleration();
+                Game.heli.decreaseAcceleration();
             }
             if (e.getCode() == KeyCode.LEFT) {
-                heli.increaseRotationLeft();
+                Game.heli.increaseRotationLeft();
             }
             if (e.getCode() == KeyCode.RIGHT) {
-                heli.increateRotationRight();
+                Game.heli.increateRotationRight();
+            }
+            if (e.getCode() == KeyCode.R) {
+                root.init();
             }
         });
         Game.loop.start();
