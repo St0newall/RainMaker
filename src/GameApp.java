@@ -71,7 +71,6 @@ class Helipad extends GameObject{
     private static final double HELI_PAD_STARTING_CIRCLE_Y = 50;
 
 
-
     public Helipad() {
         heliPadSquare = new Rectangle(HELI_PAD_LENGTH, HELI_PAD_LENGTH,
                 Color.YELLOW);
@@ -118,6 +117,8 @@ class Helicopter extends GameObject{
     private static double HEADING;
     boolean ignitionPress;
 
+    private static boolean SEEDING;
+
     public void increaseAcceleration(){
         if(ignitionPress) {
             if (SPEED <= 10) {
@@ -135,6 +136,7 @@ class Helicopter extends GameObject{
     public double getSpeed() {
         return SPEED;
     }
+
     public void setFuel(double fuel){
         this.FUEL = fuel;
     }
@@ -219,6 +221,13 @@ class Helicopter extends GameObject{
     public double calculateAng(){
         double absAngle = (450-ANGLE)%360;
         return Math.toRadians(absAngle);
+    }
+
+    public void setSEEDING(){
+        SEEDING = !SEEDING;
+    }
+    public static boolean isSEEDING() {
+        return SEEDING;
     }
 
     public Helicopter getHeli(){
@@ -346,6 +355,15 @@ public class GameApp extends Application {
             if (e.getCode() == KeyCode.R) {
                 root.init();
             }
+            if(Game.isHelicopterCollidingWithCloud()){
+                Game.heli.setSEEDING();
+            }
+            if(Game.heli.isSEEDING()){
+                if(e.getCode() == KeyCode.SPACE) {
+                    System.out.println("SEEDING");
+                }
+            }
+
         });
         Game.loop.start();
     }
