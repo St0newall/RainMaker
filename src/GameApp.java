@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
@@ -154,6 +155,7 @@ class Helipad extends GameObject{
 
 
     public Helipad() {
+
         heliPadSquare = new Rectangle(HELI_PAD_LENGTH, HELI_PAD_LENGTH,
                 Color.YELLOW);
         heliPadSquare.setTranslateX(HELI_PAD_STARTING_X);
@@ -242,6 +244,7 @@ class Helicopter extends GameObject{
         ignitionPress = false;
         SPEED = 0;
         ANGLE = 0;
+        HEADING = 0;
         FUEL = 2500;
 
         HelicopterBase = new Ellipse(HELI_BASE_DIA, HELI_BASE_DIA);
@@ -373,6 +376,7 @@ class Game extends Pane{
     static Helipad pad;
     static Cloud cloud;
     static Pond pond;
+    static Rectangle Background;
     static String winMsg = "Congratulations, You have won. Play" +
             "Agin?";
     String loseMsg = "You lost. Play Again?";
@@ -380,6 +384,8 @@ class Game extends Pane{
 
     public Game() {
         super.setScaleY(-1);
+        Background = new Rectangle(400,800);
+        Background.setFill(Color.BLACK);
     }
 
     public static boolean isHelicopterinsideHeliPad(){
@@ -396,9 +402,10 @@ class Game extends Pane{
         loop.start();
         super.getChildren().clear();
         super.getChildren().setAll(
+                Background,
                 pad = new Helipad(),
-                cloud = new Cloud(),
                 pond = new Pond(),
+                cloud = new Cloud(),
                 heli = new Helicopter()
         );
     }
@@ -467,12 +474,8 @@ class Game extends Pane{
 
             heli.update();
             cloud.update();
-
-
             pond.setPondFillText(delta);
-
             heli.setPivot(heli.myTranslate.getX(), heli.myTranslate.getY());
-
             winOrLose();
         }
     };
