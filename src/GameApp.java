@@ -20,6 +20,9 @@ class Pond extends GameObject implements Updatable{
     Ellipse Pond;
     Random rand = new Random();
 
+    private static double fillCounter;
+
+    Text PondFillText;
     int rand_intY = rand.nextInt(200,800);
     int rand_intX = rand.nextInt(0,400);
 
@@ -29,16 +32,35 @@ class Pond extends GameObject implements Updatable{
         Pond.setTranslateX(rand_intX);
         Pond.setFill(Color.BLUE);
 
+
+        PondFillText = new Text(String.format("%.0f",  fillCounter));
+        PondFillText.setFill(Color.WHITE);
+        PondFillText.setX(Pond.getTranslateX());
+        PondFillText.setY(Pond.getTranslateY());
+        PondFillText.setScaleY(-1);
+
+
+
         add(Pond);
+        add(PondFillText);
     }
+
+    public void fillPond() {
+    }
+
+    public void setPondFillText(double delta){
+        if(Game.cloud.getpCounter() > 30) {
+            fillCounter = fillCounter + delta * 2;
+            PondFillText.setText(String.format("%.0f", fillCounter));
+        }
+    }
+
     @Override
     public void update() {
-        if(Game.cloud.getpCounter() > 30) {
-            Pond.getScaleX();
-            Pond.getScaleY();
-        }
 
     }
+
+
 }
 class Cloud extends GameObject implements Updatable{
     Ellipse Cloud;
@@ -57,10 +79,10 @@ class Cloud extends GameObject implements Updatable{
         Cloud.setFill(Color.WHITE);
 
 
-        precipitation = new Text ("%" + pCounter);
+        precipitation = new Text (String.format("%.0f", pCounter));
         precipitation.setFill(Color.BLUE);
-        precipitation.setX(Cloud.getTranslateX() - 7);
-        precipitation.setY(Cloud.getTranslateY() + 5);
+        precipitation.setX(Cloud.getTranslateX());
+        precipitation.setY(Cloud.getTranslateY());
         precipitation.setScaleY(-1);
 
         add(Cloud);
@@ -79,7 +101,7 @@ class Cloud extends GameObject implements Updatable{
     public void incrementCloudPrecipitation(double delta){
         if(pCounter < 100) {
             pCounter = pCounter + delta * 15;
-            precipitation.setText("%" + (pCounter));
+            precipitation.setText(String.format("%.0f", pCounter));
         }
     }
 
@@ -98,11 +120,11 @@ class Cloud extends GameObject implements Updatable{
     public void decrementPrecipitation(double delta) {
         if(pCounter > 0) {
             pCounter = pCounter - delta * 2;
-            precipitation.setText("%" + (pCounter));
+            precipitation.setText(String.format("%.0f", pCounter));
         }
         if(pCounter < 0) {
             pCounter = 0;
-            precipitation.setText("%" + (pCounter));
+            precipitation.setText(String.format("%.0f", pCounter));
         }
     }
 }
@@ -362,6 +384,7 @@ class Game extends Pane{
 
             if(heli.isSEEDING()){
                 cloud.incrementCloudPrecipitation(delta);
+
             }
 
             if (heli.isIgnitionPress())  {
@@ -371,9 +394,10 @@ class Game extends Pane{
 
             heli.update();
             cloud.update();
-            pond.update();
-            heli.setPivot(heli.myTranslate.getX(), heli.myTranslate.getY());
 
+            pond.setPondFillText(delta);
+
+            heli.setPivot(heli.myTranslate.getX(), heli.myTranslate.getY());
 
         }
     };
