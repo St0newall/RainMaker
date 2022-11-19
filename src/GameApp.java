@@ -6,7 +6,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
@@ -19,16 +18,16 @@ import javafx.stage.Stage;
 
 import java.util.Random;
 
-class Pond extends GameObject implements Updatable{
+//divide seeding into two parts
+
+class Pond extends GameObject{
     Ellipse Pond;
     Random rand = new Random();
 
     private static double fillCounter;
-
     Text PondFillText;
     int rand_intY = rand.nextInt(200,800);
     int rand_intX = rand.nextInt(0,400);
-
     int randRadandFill = rand.nextInt(15,30);
     public Pond(){
         fillCounter = randRadandFill;
@@ -59,21 +58,18 @@ class Pond extends GameObject implements Updatable{
     public void setPondFillText(double delta){
         if(fillCounter < 101) {
             if (Game.cloud.getpCounter() > 30) {
-                fillCounter = fillCounter + delta * 2;
+                fillCounter = fillCounter + (delta);
                 PondFillText.setText(String.format("%.0f", fillCounter));
                 fillPond();
             }
+        }
+        if(fillCounter>=100) {
+            Game.setWinCondition();
         }
     }
     public double getfillCounter(){
         return fillCounter;
     }
-
-    @Override
-    public void update() {
-
-    }
-
 
 }
 class Cloud extends GameObject implements Updatable{
@@ -103,6 +99,7 @@ class Cloud extends GameObject implements Updatable{
         add(precipitation);
     }
 
+
     public void setpCounter(int PrecCount){
         if(pCounter<100)
         this.pCounter = PrecCount;
@@ -112,33 +109,37 @@ class Cloud extends GameObject implements Updatable{
         return this.pCounter;
     }
 
-    public void incrementCloudPrecipitation(double delta){
+    public void incrementCloudPrecipitation(){
         if(pCounter < 100) {
-            pCounter = pCounter + delta * 15;
+            pCounter = pCounter + 1;
             precipitation.setText(String.format("%.0f", pCounter));
         }
     }
 
-
     public Ellipse getCloud(){
         return Cloud;
     }
+
+    public void seeding() {
+        Game.cloud.getCloud().setFill(Color.rgb((int) (255-pCounter),
+                (int) (255-pCounter),(int) (255-pCounter)));
+        incrementCloudPrecipitation();
+    }
     @Override
     public void update() {
-            Cloud.setFill(Color.rgb((int) (255-pCounter),
-                    (int) (255-pCounter),(int) (255-pCounter)));
 
     }
 
     public void decrementPrecipitation(double delta) {
         if(pCounter > 0) {
-            pCounter = pCounter - delta * 2;
+            pCounter = pCounter - (delta);//Dont worry abt timeing YET
             precipitation.setText(String.format("%.0f", pCounter));
         }
         if(pCounter < 0) {
             pCounter = 0;
             precipitation.setText(String.format("%.0f", pCounter));
         }
+
     }
 }
 class Helipad extends GameObject{
@@ -155,7 +156,6 @@ class Helipad extends GameObject{
 
 
     public Helipad() {
-
         heliPadSquare = new Rectangle(HELI_PAD_LENGTH, HELI_PAD_LENGTH,
                 Color.YELLOW);
         heliPadSquare.setTranslateX(HELI_PAD_STARTING_X);
@@ -191,8 +191,9 @@ class Helipad extends GameObject{
     public Helipad getHelipad(){
         return this;
     }
+
 }
-class Helicopter extends GameObject{
+class Helicopter extends GameObject {
     private static final double HELI_BASE_DIA = 15;
     private static final double HELI_TIP_LENGTH = 25;
     private static final double HELI_TIP_WIDTH = 5;
@@ -205,7 +206,6 @@ class Helicopter extends GameObject{
     private static double HEADING;
     boolean ignitionPress;
 
-    private static boolean SEEDING;
 
     public void increaseAcceleration(){
         if(ignitionPress) {
@@ -214,10 +214,11 @@ class Helicopter extends GameObject{
             }
         }
     }
+
     public void decreaseAcceleration(){
         if(ignitionPress) {
             if (SPEED >= -2) {
-                SPEED -= 0.1;
+                SPEED -= 0.2;
             }
         }
     }
@@ -239,13 +240,12 @@ class Helicopter extends GameObject{
             ignitionPress = !ignitionPress;
         }
     }
-
     public Helicopter(){
         ignitionPress = false;
         SPEED = 0;
         ANGLE = 0;
         HEADING = 0;
-        FUEL = 2500;
+        FUEL = 100;
 
         HelicopterBase = new Ellipse(HELI_BASE_DIA, HELI_BASE_DIA);
         HelicopterBase.setFill(Color.YELLOW);
@@ -305,23 +305,16 @@ class Helicopter extends GameObject{
     }
 
     public void decreaseFuel(){
+        FUEL = FUEL - 1;
         fuel.setText("F:"+ FUEL);
+        if(FUEL<=0) {
+            Game.setLoseCondition();
+        }
     }
 
     public double calculateAng(){
         double absAngle = (450-ANGLE)%360;
         return Math.toRadians(absAngle);
-    }
-
-    public void setSEEDING(){
-        SEEDING = !SEEDING;
-    }
-
-    public void setSEEDINGFALSE(){
-        SEEDING = false;
-    }
-    public static boolean isSEEDING() {
-        return SEEDING;
     }
 
     public Helicopter getHeli(){
@@ -366,10 +359,12 @@ abstract class GameObject extends Group implements Updatable{
                 ((Updatable) n).update();
         }
     }
+
     void add(Node node) {
         this.getChildren().add(node); // call this in each object that extend
         // this to add it to the root Group. (IN THE CONSTRUCTOR)
     }
+
 }
 class Game extends Pane{
     static Helicopter heli;
@@ -377,6 +372,8 @@ class Game extends Pane{
     static Cloud cloud;
     static Pond pond;
     static Rectangle Background;
+    static boolean winCondition;
+    static boolean loseCondition;
     static String winMsg = "Congratulations, You have won. Play" +
             "Agin?";
     String loseMsg = "You lost. Play Again?";
@@ -386,6 +383,42 @@ class Game extends Pane{
         super.setScaleY(-1);
         Background = new Rectangle(400,800);
         Background.setFill(Color.BLACK);
+        AnimationTimer loop = new AnimationTimer() {
+            double oldTime = 0;
+            double elapsedTime = 0;
+            double frameTime = 0;
+            int limit = 0;
+            public void handle(long now) {
+                if (oldTime <= 0) oldTime = now;
+                double delta = (now - oldTime) / 1e9;
+                frameTime = (1 / (1 / delta)) * 1e3;
+                oldTime = now;
+                elapsedTime += delta;
+
+                if (heli.isIgnitionPress())  {
+                    heli.decreaseFuel();
+                }
+                heli.update();
+                pond.setPondFillText(delta);
+                cloud.decrementPrecipitation(delta);
+                heli.setPivot(heli.myTranslate.getX(),
+                        heli.myTranslate.getY());
+
+                if(setLoseCondition()) {
+                    winOrLose();
+                }
+
+            }
+        };
+        loop.start();
+    }
+
+    public static boolean setWinCondition(){
+        return !winCondition;
+    }
+
+    public static boolean setLoseCondition(){
+        return !loseCondition;
     }
 
     public static boolean isHelicopterinsideHeliPad(){
@@ -399,7 +432,6 @@ class Game extends Pane{
     }
 
     public void init(){
-        loop.start();
         super.getChildren().clear();
         super.getChildren().setAll(
                 Background,
@@ -411,27 +443,24 @@ class Game extends Pane{
     }
 
     public void winOrLose(){
-        if(pond.getfillCounter()>=100){
-            loop.stop();
 
+        if(pond.getfillCounter()>100){
             alert = new Alert(Alert.AlertType.CONFIRMATION, winMsg,
                     ButtonType.YES, ButtonType.NO);
-
             alert.setOnHidden(evt -> {
                 if (alert.getResult() == ButtonType.YES) {
                     init();
                 }
-
                 if(alert.getResult() == ButtonType.NO) {
                     System.exit(0);
                 }
             });
-
             alert.show();
         }
-        if(heli.getFuel()<=0){
-            loop.stop();
-            alert = new Alert(Alert.AlertType.CONFIRMATION, loseMsg,
+
+
+        if(loseCondition == false){
+            alert = new Alert(Alert.AlertType.CONFIRMATION,loseMsg,
                     ButtonType.YES, ButtonType.NO);
 
             alert.setOnHidden(evt -> {
@@ -443,42 +472,10 @@ class Game extends Pane{
                 }
             });
             alert.show();
-
         }
+
     }
-    AnimationTimer loop = new AnimationTimer() {
-        double oldTime = 0;
-        double elapsedTime = 0;
-        double frameTime = 0;
-        public void handle(long now) {
 
-            if (oldTime <= 0) oldTime = now;
-            double delta = (now - oldTime) / 1e9;
-            frameTime = (1 / (1 / delta)) * 1e3;
-            oldTime = now;
-            elapsedTime += delta;
-
-            if(!heli.isSEEDING()){
-                cloud.decrementPrecipitation(delta);
-            }
-
-            if(heli.isSEEDING()){
-                cloud.incrementCloudPrecipitation(delta);
-
-            }
-
-            if (heli.isIgnitionPress())  {
-                heli.decreaseFuel();
-                heli.setFuel(heli.getFuel() - 1);
-            }
-
-            heli.update();
-            cloud.update();
-            pond.setPondFillText(delta);
-            heli.setPivot(heli.myTranslate.getX(), heli.myTranslate.getY());
-            winOrLose();
-        }
-    };
 }
 
 public class GameApp extends Application {
@@ -495,7 +492,6 @@ public class GameApp extends Application {
         root.init();
         Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
         primaryStage.setScene(scene);
-
         scene.setFill(Color.BLACK);
         primaryStage.setResizable(false);
         primaryStage.show();
@@ -521,17 +517,13 @@ public class GameApp extends Application {
             if (e.getCode() == KeyCode.R) {
                 root.init();
             }
-
-            if (Game.isHelicopterCollidingWithCloud()) {
-                Game.heli.setSEEDINGFALSE();
-                if (e.getCode() == KeyCode.SPACE) {
-                    Game.heli.setSEEDING();
+            if (e.getCode() == KeyCode.SPACE) {
+                if(Game.isHelicopterCollidingWithCloud()){
+                    Game.cloud.seeding();
                 }
-            } else
-                Game.heli.setSEEDINGFALSE();
+            }
+
         });
-        scene.setOnKeyReleased(e -> {
-            Game.heli.setSEEDINGFALSE();
-        });
+
     }
 }
