@@ -5,6 +5,8 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -20,10 +22,23 @@ import java.util.Random;
 
 //divide seeding into two parts
 
+class Background extends GameObject{
+    int backgroundWidth = 400;
+    int backgroundHeight = 800;
+    public Background() {
+
+        Image backgroundImage = new Image("3095.jpg");
+        ImageView background = new ImageView();
+        background.setImage(backgroundImage);
+
+
+        background.setScaleY(-1);
+        add(background);
+    }
+}
 class Pond extends GameObject{
     Ellipse Pond;
     Random rand = new Random();
-
     private static double fillCounter;
     Text PondFillText;
     int rand_intY = rand.nextInt(200,800);
@@ -127,9 +142,7 @@ class Cloud extends GameObject implements Updatable{
     }
     @Override
     public void update() {
-
     }
-
     public void decrementPrecipitation(double delta) {
         if(pCounter > 0) {
             pCounter = pCounter - (delta);//Dont worry abt timeing YET
@@ -371,7 +384,7 @@ class Game extends Pane{
     static Helipad pad;
     static Cloud cloud;
     static Pond pond;
-    static Rectangle Background;
+    Background background;
     static boolean winCondition;
     static boolean loseCondition;
     static String winMsg = "Congratulations, You have won. Play" +
@@ -381,8 +394,6 @@ class Game extends Pane{
 
     public Game() {
         super.setScaleY(-1);
-        Background = new Rectangle(400,800);
-        Background.setFill(Color.BLACK);
         AnimationTimer loop = new AnimationTimer() {
             double oldTime = 0;
             double elapsedTime = 0;
@@ -403,10 +414,6 @@ class Game extends Pane{
                 cloud.decrementPrecipitation(delta);
                 heli.setPivot(heli.myTranslate.getX(),
                         heli.myTranslate.getY());
-
-                if(setLoseCondition()) {
-                    winOrLose();
-                }
 
             }
         };
@@ -434,7 +441,7 @@ class Game extends Pane{
     public void init(){
         super.getChildren().clear();
         super.getChildren().setAll(
-                Background,
+                background = new Background(),
                 pad = new Helipad(),
                 pond = new Pond(),
                 cloud = new Cloud(),
@@ -457,7 +464,6 @@ class Game extends Pane{
             });
             alert.show();
         }
-
 
         if(loseCondition == false){
             alert = new Alert(Alert.AlertType.CONFIRMATION,loseMsg,
