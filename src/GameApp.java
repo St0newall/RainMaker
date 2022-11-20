@@ -21,17 +21,15 @@ import javafx.stage.Stage;
 import java.util.Random;
 
 //divide seeding into two parts
-
 class Background extends GameObject{
     int backgroundWidth = 400;
     int backgroundHeight = 800;
     public Background() {
-
         Image backgroundImage = new Image("3095.jpg");
         ImageView background = new ImageView();
         background.setImage(backgroundImage);
-
-
+        background.setFitHeight(backgroundHeight);
+        background.setFitWidth(backgroundWidth);
         background.setScaleY(-1);
         add(background);
     }
@@ -97,7 +95,6 @@ class Cloud extends GameObject implements Updatable{
 
     public Cloud(){
         pCounter = 0;
-
         Cloud = new Ellipse(45,45);
         Cloud.setTranslateY(rand_intY);
         Cloud.setTranslateX(rand_intX);
@@ -207,11 +204,10 @@ class Helipad extends GameObject{
 
 }
 class Helicopter extends GameObject {
-    private static final double HELI_BASE_DIA = 15;
     private static final double HELI_TIP_LENGTH = 25;
     private static final double HELI_TIP_WIDTH = 5;
-    Ellipse HelicopterBase;
     Rectangle HelicopterTip;
+    HelicopterBody HelicopterBase;
     Text fuel;
     private static double SPEED;
     private static double FUEL;
@@ -235,14 +231,6 @@ class Helicopter extends GameObject {
             }
         }
     }
-    public double getSpeed() {
-        return SPEED;
-    }
-
-    public void setFuel(double fuel){
-        this.FUEL = fuel;
-    }
-    public double getFuel() {return this.FUEL;}
 
     boolean isIgnitionPress(){
         return ignitionPress;
@@ -259,17 +247,7 @@ class Helicopter extends GameObject {
         ANGLE = 0;
         HEADING = 0;
         FUEL = 100;
-
-        HelicopterBase = new Ellipse(HELI_BASE_DIA, HELI_BASE_DIA);
-        HelicopterBase.setFill(Color.YELLOW);
-
-        HelicopterBase.setTranslateX(210);
-        HelicopterBase.setTranslateY(50);
-        HelicopterTip = new Rectangle(HELI_TIP_WIDTH, HELI_TIP_LENGTH);
-        HelicopterTip.setFill(Color.YELLOW);
-
-        HelicopterTip.setTranslateX(207.5);
-        HelicopterTip.setTranslateY(60);
+        HelicopterBase = new HelicopterBody();
 
         fuel = new Text("F:" + FUEL);
         fuel.setFill(Color.YELLOW);
@@ -277,8 +255,8 @@ class Helicopter extends GameObject {
         fuel.setY(30);
         fuel.setScaleY(-1);
 
+
         add(fuel);
-        add(HelicopterTip);
         add(HelicopterBase);
     }
 
@@ -290,6 +268,7 @@ class Helicopter extends GameObject {
     public double getMyRotation() {
         return myRotation.getAngle();
     }
+
     public void setPivot(double currX, double currY) {
         myRotation.setPivotX(currX+210);
         myRotation.setPivotY(currY+50);
@@ -336,6 +315,94 @@ class Helicopter extends GameObject {
 }
 interface Updatable {
     void update();
+}
+
+class HelicopterBody extends Group{
+    Ellipse HelicopterBase;
+
+    Rectangle HeliBlock;
+    Rectangle HeliLandGuard;
+    Rectangle HeliLandGuardTwo;
+    Rectangle ConnectOne;
+    Rectangle ConnectTwo;
+    Rectangle ConnectThree;
+    Rectangle ConnectFour;
+
+    Rectangle HeliTale;
+
+    Rectangle BackBlade;
+
+    private static final double HELI_BASE_DIA = 17;
+    public HelicopterBody(){
+        HelicopterBase = new Ellipse(HELI_BASE_DIA, HELI_BASE_DIA);
+        HelicopterBase.setFill(Color.MOCCASIN);
+        HelicopterBase.setTranslateX(210);
+        HelicopterBase.setTranslateY(70);
+
+
+        HeliBlock = new Rectangle(34, 7);
+        HeliBlock.setFill(Color.MOCCASIN);
+        HeliBlock.setTranslateX(193);
+        HeliBlock.setTranslateY(53);
+
+        HeliLandGuard = new Rectangle(5, 40);
+        HeliLandGuard.setFill(Color.GRAY);
+        HeliLandGuard.setTranslateX(183);
+        HeliLandGuard.setTranslateY(43);
+
+        HeliLandGuardTwo = new Rectangle(5, 40);
+        HeliLandGuardTwo.setFill(Color.GRAY);
+        HeliLandGuardTwo.setTranslateX(233);
+        HeliLandGuardTwo.setTranslateY(43);
+
+        ConnectOne = new Rectangle(20,2);
+        ConnectOne.setFill(Color.BLACK);
+        ConnectOne.setTranslateX(183);
+        ConnectOne.setTranslateY(70);
+
+
+        ConnectTwo = new Rectangle(20, 2);
+        ConnectTwo.setFill(Color.BLACK);
+        ConnectTwo.setTranslateX(183);
+        ConnectTwo.setTranslateY(55);
+
+        ConnectThree = new Rectangle(20,2);
+        ConnectThree.setFill(Color.BLACK);
+        ConnectThree.setTranslateX(213);
+        ConnectThree.setTranslateY(55);
+
+        ConnectFour = new Rectangle(20,2);
+        ConnectFour.setFill(Color.BLACK);
+        ConnectFour.setTranslateX(213);
+        ConnectFour.setTranslateY(70);
+
+        HeliTale = new Rectangle(6,30);
+        HeliTale.setFill(Color.MOCCASIN);
+        HeliTale.setTranslateY(25);
+        HeliTale.setTranslateX(207);
+
+        BackBlade = new Rectangle(2,10 );
+        BackBlade.setFill(Color.GRAY);
+        BackBlade.setTranslateX(214);
+        BackBlade.setTranslateY(20);
+
+
+        this.getChildren().add(BackBlade);
+        this.getChildren().add(HeliTale);
+        this.getChildren().add(ConnectFour);
+        this.getChildren().add(ConnectThree);
+        this.getChildren().add(ConnectTwo);
+        this.getChildren().add(ConnectOne);
+        this.getChildren().add(HeliLandGuardTwo);
+        this.getChildren().add(HeliLandGuard);
+        this.getChildren().add(HeliBlock);
+        this.getChildren().add(HelicopterBase);
+
+    }
+}
+
+class HelicopterBlade{
+
 }
 
 abstract class GameObject extends Group implements Updatable{
