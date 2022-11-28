@@ -137,6 +137,7 @@ class Cloud extends GameObject implements Updatable{
                 (int) (255-pCounter),(int) (255-pCounter)));
         incrementCloudPrecipitation();
     }
+
     @Override
     public void update() {
     }
@@ -276,8 +277,6 @@ class Helicopter extends GameObject {
     public void setPivot(double currX, double currY) {
         myRotation.setPivotX(currX+210);
         myRotation.setPivotY(currY+50);
-
-
 
     }
     public void increaseRotationLeft() {
@@ -473,7 +472,7 @@ class Game extends Pane{
     static Helicopter heli;
     static Helipad pad;
     static Cloud cloud;
-    static Pond pond;
+    Pond pond;
     Background background;
     static boolean winCondition;
     static boolean loseCondition;
@@ -537,8 +536,11 @@ class Game extends Pane{
                 background = new Background(),
                 pad = new Helipad(),
                 pond = new Pond(),
+                pond = new Pond(),
+                pond = new Pond(),
                 cloud = new Cloud(),
                 heli = new Helicopter()
+
         );
     }
 
