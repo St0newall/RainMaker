@@ -505,8 +505,6 @@ class Game extends Pane{
                 cloud.decrementPrecipitation(delta);
                 heli.setPivot(heli.myTranslate.getX(),
                         heli.myTranslate.getY());
-
-
             }
         };
         loop.start();
