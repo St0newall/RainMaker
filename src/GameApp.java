@@ -208,6 +208,7 @@ class Helicopter extends GameObject {
     private static final double HELI_TIP_WIDTH = 5;
     Rectangle HelicopterTip;
     HelicopterBody HelicopterBase;
+    HelicopterBlade HeliBlade;
     Text fuel;
     private static double SPEED;
     private static double FUEL;
@@ -248,6 +249,8 @@ class Helicopter extends GameObject {
         HEADING = 0;
         FUEL = 100;
         HelicopterBase = new HelicopterBody();
+        HeliBlade = new HelicopterBlade();
+        HeliBlade.setRotate(90);
 
         fuel = new Text("F:" + FUEL);
         fuel.setFill(Color.YELLOW);
@@ -258,6 +261,7 @@ class Helicopter extends GameObject {
 
         add(fuel);
         add(HelicopterBase);
+        add(HeliBlade);
     }
 
     public void update() {
@@ -272,6 +276,9 @@ class Helicopter extends GameObject {
     public void setPivot(double currX, double currY) {
         myRotation.setPivotX(currX+210);
         myRotation.setPivotY(currY+50);
+
+
+
     }
     public void increaseRotationLeft() {
             if(SPEED>.1 || SPEED <- .1) {
@@ -339,7 +346,6 @@ class HelicopterBody extends Group{
         HelicopterBase.setTranslateX(210);
         HelicopterBase.setTranslateY(70);
 
-
         HeliBlock = new Rectangle(34, 7);
         HeliBlock.setFill(Color.MOCCASIN);
         HeliBlock.setTranslateX(193);
@@ -401,8 +407,26 @@ class HelicopterBody extends Group{
     }
 }
 
-class HelicopterBlade{
+class HelicopterBlade extends GameObject{
+    Rectangle HelicopterBlade;
+    public HelicopterBlade() {
+        HelicopterBlade = new Rectangle(3, 70);
+        HelicopterBlade.setFill(Color.GRAY);
+        HelicopterBlade.setTranslateX(209);
+        HelicopterBlade.setTranslateY(20);
+        this.getChildren().add(HelicopterBlade);
 
+        myRotation.setPivotX(210.5);
+        myRotation.setPivotY(55);
+    }
+
+    @Override
+    public void update() {
+
+    }
+    public void rotateBlade(double rotation) {
+        myRotation.setAngle(rotation);
+    }
 }
 
 abstract class GameObject extends Group implements Updatable{
@@ -416,7 +440,6 @@ abstract class GameObject extends Group implements Updatable{
         myScale = new Scale();
         this.getTransforms().addAll( myRotation, myTranslate,myScale);
     }
-
     public void rotate(double degrees) {
         myRotation.setAngle(degrees);
     }
@@ -474,13 +497,16 @@ class Game extends Pane{
                 elapsedTime += delta;
 
                 if (heli.isIgnitionPress())  {
+                    heli.HeliBlade.rotateBlade(limit);
                     heli.decreaseFuel();
+                    limit++;
                 }
                 heli.update();
                 pond.setPondFillText(delta);
                 cloud.decrementPrecipitation(delta);
                 heli.setPivot(heli.myTranslate.getX(),
                         heli.myTranslate.getY());
+
 
             }
         };
@@ -535,7 +561,6 @@ class Game extends Pane{
         if(loseCondition == false){
             alert = new Alert(Alert.AlertType.CONFIRMATION,loseMsg,
                     ButtonType.YES, ButtonType.NO);
-
             alert.setOnHidden(evt -> {
                 if (alert.getResult() == ButtonType.YES) {
                     init();
@@ -554,6 +579,7 @@ class Game extends Pane{
 public class GameApp extends Application {
     private int SCENE_WIDTH = 400;
     private int SCENE_HEIGHT = 800;
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -568,7 +594,6 @@ public class GameApp extends Application {
         scene.setFill(Color.BLACK);
         primaryStage.setResizable(false);
         primaryStage.show();
-
         scene.setOnKeyPressed(e -> {
             if(Game.isHelicopterinsideHeliPad()) {
                 if (e.getCode() == KeyCode.I) {
