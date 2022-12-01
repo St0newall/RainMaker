@@ -22,7 +22,7 @@ import java.util.Random;
 
 //divide seeding into two parts
 class Background extends GameObject{
-    int backgroundWidth = 400;
+    int backgroundWidth = 800;
     int backgroundHeight = 800;
     public Background() {
         Image backgroundImage = new Image("3095.jpg");
@@ -159,44 +159,28 @@ class Helipad extends GameObject{
     Rectangle innerHelipadSquare;
     Ellipse helipadCircle;
     Ellipse innerhelipadCircle;
-    private static final double HELI_PAD_STARTING_X = 170; //looks center
+    private static final double HELI_PAD_STARTING_X = 370; //looks center
     private static final double HELI_PAD_STARTING_Y = 10;
     private  static final double HELI_PAD_CIRCLE_DIA = 35;
-    private static final double HELI_PAD_STARTING_CIRCLE_X = 210;
+    private static final double HELI_PAD_STARTING_CIRCLE_X = 410;
     private static final double HELI_PAD_STARTING_CIRCLE_Y = 50;
 
 
     public Helipad() {
-        heliPadSquare = new Rectangle(HELI_PAD_LENGTH, HELI_PAD_LENGTH,
-                Color.YELLOW);
+        heliPadSquare = new Rectangle(HELI_PAD_LENGTH, HELI_PAD_LENGTH);
+        heliPadSquare.setStroke(Color.YELLOW);
         heliPadSquare.setTranslateX(HELI_PAD_STARTING_X);
         heliPadSquare.setTranslateY(HELI_PAD_STARTING_Y);
 
-        innerHelipadSquare = new Rectangle(HELI_PAD_LENGTH-5,
-                HELI_PAD_LENGTH-5);//make it tiny bit smaller than the outer
-        // square ( padding? )
-        innerHelipadSquare.setFill(Color.BLACK);
-        innerHelipadSquare.setTranslateX(HELI_PAD_STARTING_X+2.5); // half of
-        // padding to make fit?
-        innerHelipadSquare.setTranslateY(HELI_PAD_STARTING_Y+2.5); //magic
-        // numbers for now until I get everything out. looking right.
-
         helipadCircle = new Ellipse(HELI_PAD_CIRCLE_DIA,
                 HELI_PAD_CIRCLE_DIA);
-        helipadCircle.setFill(Color.YELLOW);
+        helipadCircle.setStroke(Color.YELLOW);
         helipadCircle.setTranslateX(HELI_PAD_STARTING_CIRCLE_X);
         helipadCircle.setTranslateY(HELI_PAD_STARTING_CIRCLE_Y);
 
-        innerhelipadCircle = new Ellipse(HELI_PAD_CIRCLE_DIA-2.5,
-                HELI_PAD_CIRCLE_DIA-2.5);
-        innerhelipadCircle.setFill(Color.BLACK);
-        innerhelipadCircle.setTranslateX(HELI_PAD_STARTING_CIRCLE_X);
-        innerhelipadCircle.setTranslateY(HELI_PAD_STARTING_CIRCLE_Y);
-
         add(heliPadSquare);
-        add(innerHelipadSquare);
+
         add(helipadCircle);
-        add(innerhelipadCircle);
     }
 
     public Helipad getHelipad(){
@@ -248,14 +232,14 @@ class Helicopter extends GameObject {
         SPEED = 0;
         ANGLE = 0;
         HEADING = 0;
-        FUEL = 100;
+        FUEL = 25000;
         HelicopterBase = new HelicopterBody();
         HeliBlade = new HelicopterBlade();
         HeliBlade.setRotate(90);
 
         fuel = new Text("F:" + FUEL);
         fuel.setFill(Color.YELLOW);
-        fuel.setX(200);
+        fuel.setX(400);
         fuel.setY(30);
         fuel.setScaleY(-1);
 
@@ -275,7 +259,7 @@ class Helicopter extends GameObject {
     }
 
     public void setPivot(double currX, double currY) {
-        myRotation.setPivotX(currX+210);
+        myRotation.setPivotX(currX+410);
         myRotation.setPivotY(currY+50);
 
     }
@@ -342,53 +326,53 @@ class HelicopterBody extends Group{
     public HelicopterBody(){
         HelicopterBase = new Ellipse(HELI_BASE_DIA, HELI_BASE_DIA);
         HelicopterBase.setFill(Color.MOCCASIN);
-        HelicopterBase.setTranslateX(210);
+        HelicopterBase.setTranslateX(410);
         HelicopterBase.setTranslateY(70);
 
         HeliBlock = new Rectangle(34, 7);
         HeliBlock.setFill(Color.MOCCASIN);
-        HeliBlock.setTranslateX(193);
+        HeliBlock.setTranslateX(393);
         HeliBlock.setTranslateY(53);
 
         HeliLandGuard = new Rectangle(5, 40);
         HeliLandGuard.setFill(Color.GRAY);
-        HeliLandGuard.setTranslateX(183);
+        HeliLandGuard.setTranslateX(383);
         HeliLandGuard.setTranslateY(43);
 
         HeliLandGuardTwo = new Rectangle(5, 40);
         HeliLandGuardTwo.setFill(Color.GRAY);
-        HeliLandGuardTwo.setTranslateX(233);
+        HeliLandGuardTwo.setTranslateX(433);
         HeliLandGuardTwo.setTranslateY(43);
 
         ConnectOne = new Rectangle(20,2);
         ConnectOne.setFill(Color.BLACK);
-        ConnectOne.setTranslateX(183);
+        ConnectOne.setTranslateX(383);
         ConnectOne.setTranslateY(70);
 
 
         ConnectTwo = new Rectangle(20, 2);
         ConnectTwo.setFill(Color.BLACK);
-        ConnectTwo.setTranslateX(183);
+        ConnectTwo.setTranslateX(383);
         ConnectTwo.setTranslateY(55);
 
         ConnectThree = new Rectangle(20,2);
         ConnectThree.setFill(Color.BLACK);
-        ConnectThree.setTranslateX(213);
+        ConnectThree.setTranslateX(413);
         ConnectThree.setTranslateY(55);
 
         ConnectFour = new Rectangle(20,2);
         ConnectFour.setFill(Color.BLACK);
-        ConnectFour.setTranslateX(213);
+        ConnectFour.setTranslateX(413);
         ConnectFour.setTranslateY(70);
 
         HeliTale = new Rectangle(6,30);
         HeliTale.setFill(Color.MOCCASIN);
         HeliTale.setTranslateY(25);
-        HeliTale.setTranslateX(207);
+        HeliTale.setTranslateX(407);
 
         BackBlade = new Rectangle(2,10 );
         BackBlade.setFill(Color.GRAY);
-        BackBlade.setTranslateX(214);
+        BackBlade.setTranslateX(414);
         BackBlade.setTranslateY(20);
 
 
@@ -411,11 +395,11 @@ class HelicopterBlade extends GameObject{
     public HelicopterBlade() {
         HelicopterBlade = new Rectangle(3, 70);
         HelicopterBlade.setFill(Color.GRAY);
-        HelicopterBlade.setTranslateX(209);
+        HelicopterBlade.setTranslateX(409);
         HelicopterBlade.setTranslateY(20);
         this.getChildren().add(HelicopterBlade);
 
-        myRotation.setPivotX(210.5);
+        myRotation.setPivotX(410.5);
         myRotation.setPivotY(55);
     }
 
@@ -577,7 +561,7 @@ class Game extends Pane{
 }
 
 public class GameApp extends Application {
-    private int SCENE_WIDTH = 400;
+    private int SCENE_WIDTH = 800;
     private int SCENE_HEIGHT = 800;
 
     public static void main(String[] args) {
