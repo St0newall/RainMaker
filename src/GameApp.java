@@ -268,7 +268,7 @@ class Helicopter extends GameObject {
             if(SPEED>.1 || SPEED <- .1) {
                 HEADING += 15;
                 ANGLE -= 15;
-                Game.heli.rotate(HEADING);
+                Game.getInstance().heli.rotate(HEADING);
             }
     }
 
@@ -276,7 +276,7 @@ class Helicopter extends GameObject {
             if(SPEED>.1 || SPEED < -.1) {
                 HEADING -= 15;
                 ANGLE += 15;
-                Game.heli.rotate(HEADING);
+                Game.getInstance().heli.rotate(HEADING);
             }
     }
 
@@ -337,13 +337,12 @@ class Off extends State{
 
     public Off(Helicopter Heli) {
         super(Heli);
-        Heli.setIgitionPress();
     }
 
     @Override
     public void ignitionStart() {
         Heli.changeState(new Starting(Heli));
-
+        Heli.setIgitionPress();
     }
 
     @Override
@@ -549,7 +548,8 @@ abstract class GameObject extends Group implements Updatable{
     }
 }
 class Game extends Pane{
-    static Helicopter heli;
+
+    Helicopter heli;
     static Helipad pad;
     static Cloud cloud;
     AnimationTimer loop;
@@ -646,11 +646,11 @@ class Game extends Pane{
 
     public static boolean isHelicopterinsideHeliPad(){
         return pad.getHelipad().getBoundsInParent().intersects(
-                heli.getHeli().getBoundsInParent());
+                getInstance().heli.getHeli().getBoundsInParent());
     }
 
     public static boolean isHelicopterCollidingWithCloud(){
-        return cloud.getCloud().getBoundsInParent().intersects(heli.getHeli()
+        return cloud.getCloud().getBoundsInParent().intersects(Game.getInstance().heli.getHeli()
                 .getBoundsInParent());
     }
     public void init(){
@@ -694,20 +694,20 @@ public class GameApp extends Application {
         scene.setOnKeyPressed(e -> {
             if(Game.isHelicopterinsideHeliPad()) {
                 if (e.getCode() == KeyCode.I) {
-                    Game.heli.setIgitionPress();
+                    Game.getInstance().heli.getState().ignitionStart();
                 }
             }
             if (e.getCode() == KeyCode.UP) {
-                Game.heli.increaseAcceleration();
+                Game.getInstance().heli.increaseAcceleration();
             }
             if (e.getCode() == KeyCode.DOWN) {
-                Game.heli.decreaseAcceleration();
+                Game.getInstance().heli.decreaseAcceleration();
             }
             if (e.getCode() == KeyCode.LEFT) {
-                Game.heli.increaseRotationLeft();
+                Game.getInstance().heli.increaseRotationLeft();
             }
             if (e.getCode() == KeyCode.RIGHT) {
-                Game.heli.increateRotationRight();
+                Game.getInstance().heli.increateRotationRight();
             }
             if (e.getCode() == KeyCode.R) {
                 Game.getInstance();
