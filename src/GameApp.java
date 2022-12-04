@@ -191,7 +191,6 @@ class Helipad extends GameObject{
 class Helicopter extends GameObject {
     private static final double HELI_TIP_LENGTH = 25;
     private static final double HELI_TIP_WIDTH = 5;
-    Rectangle HelicopterTip;
     HelicopterBody HelicopterBase;
     HelicopterBlade HeliBlade;
     Text fuel;
@@ -229,6 +228,7 @@ class Helicopter extends GameObject {
         }
     }
     public Helicopter(){
+        this.state = new Off(this);
         ignitionPress = false;
         SPEED = 0;
         ANGLE = 0;
@@ -342,7 +342,6 @@ class Off extends State{
 
     @Override
     public void ignitionStart() {
-
         Heli.changeState(new Starting(Heli));
 
     }
@@ -360,7 +359,8 @@ class Starting extends State {
 
     @Override
     public void ignitionStart() {
-
+        Heli.changeState(new Stopping(Heli));
+        //STARTING CAN GO TO
     }
 
     @Override
@@ -376,7 +376,8 @@ class Stopping extends State{
 
     @Override
     public void ignitionStart() {
-
+        Heli.changeState(new Starting(Heli));
+        //STOPPING CAN GO TO STARTING AND OFF
     }
 
     @Override
@@ -393,7 +394,7 @@ class Ready extends State{
 
     @Override
     public void ignitionStart() {
-
+        Heli.changeState(new Stopping(Heli));
     }
 
     @Override
@@ -559,9 +560,12 @@ class Game extends Pane{
     static String winMsg = "Congratulations, You have won. Play" +
             "Agin?";
     String loseMsg = "You lost. Play Again?";
+
     private static Alert alert;
 
-    public Game() {
+    private static Game Game = new Game();
+
+    private Game() {
         super.setScaleY(-1);
         loop = new AnimationTimer() {
             double oldTime = 0;
@@ -594,6 +598,12 @@ class Game extends Pane{
             }
         };
         loop.start();
+    }
+
+    public static Game getInstance(){
+        if (Game == null)
+            Game = new Game();
+        return Game;
     }
 
     private void gameWin() {
@@ -659,6 +669,8 @@ class Game extends Pane{
         );
     }
 
+
+
 }
 
 public class GameApp extends Application {
@@ -671,10 +683,10 @@ public class GameApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Game root = new Game();//Game extends Pane
-        root.setScaleY(-1);
-        root.init();
-        Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
+
+        Game.getInstance().setScaleY(-1);
+        Game.getInstance().init();
+        Scene scene = new Scene(Game.getInstance(), SCENE_WIDTH, SCENE_HEIGHT);
         primaryStage.setScene(scene);
         scene.setFill(Color.BLACK);
         primaryStage.setResizable(false);
@@ -698,7 +710,7 @@ public class GameApp extends Application {
                 Game.heli.increateRotationRight();
             }
             if (e.getCode() == KeyCode.R) {
-                root.init();
+                Game.getInstance();
             }
             if (e.getCode() == KeyCode.SPACE) {
                 if(Game.isHelicopterCollidingWithCloud()){
