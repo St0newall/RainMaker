@@ -200,6 +200,7 @@ class Helicopter extends GameObject {
     private static double ANGLE;
     private static double HEADING;
     boolean ignitionPress;
+    private State state;
 
 
     public void increaseAcceleration(){
@@ -302,6 +303,14 @@ class Helicopter extends GameObject {
         return this.FUEL;
     }
 
+    public void changeState(State state) {
+        this.state = state;
+    }
+
+    public State getState() {
+        return state;
+    }
+
     public Helicopter getHeli(){
         return this;
     }
@@ -309,6 +318,90 @@ class Helicopter extends GameObject {
 interface Updatable {
     void update();
 }
+
+abstract class State{
+    Helicopter Heli;
+
+    State(Helicopter Heli){
+        this.Heli = Heli;
+    }
+
+    public abstract void ignitionStart();
+    public abstract void Seeding();
+
+
+}
+
+class Off extends State{
+
+
+    public Off(Helicopter Heli) {
+        super(Heli);
+        Heli.setIgitionPress();
+    }
+
+    @Override
+    public void ignitionStart() {
+
+        Heli.changeState(new Starting(Heli));
+
+    }
+
+    @Override
+    public void Seeding() {
+
+    }
+}
+class Starting extends State {
+
+    public Starting(Helicopter Heli) {
+        super(Heli);
+    }
+
+    @Override
+    public void ignitionStart() {
+
+    }
+
+    @Override
+    public void Seeding() {
+
+    }
+}
+class Stopping extends State{
+
+    Stopping(Helicopter Heli) {
+        super(Heli);
+    }
+
+    @Override
+    public void ignitionStart() {
+
+    }
+
+    @Override
+    public void Seeding() {
+
+    }
+}
+
+class Ready extends State{
+
+    Ready(Helicopter Heli) {
+        super(Heli);
+    }
+
+    @Override
+    public void ignitionStart() {
+
+    }
+
+    @Override
+    public void Seeding() {
+
+    }
+}
+
 
 class HelicopterBody extends Group{
     Ellipse HelicopterBase;
@@ -453,7 +546,6 @@ abstract class GameObject extends Group implements Updatable{
         this.getChildren().add(node); // call this in each object that extend
         // this to add it to the root Group. (IN THE CONSTRUCTOR)
     }
-
 }
 class Game extends Pane{
     static Helicopter heli;
