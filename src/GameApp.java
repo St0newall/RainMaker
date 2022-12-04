@@ -342,7 +342,6 @@ class Off extends State{
     @Override
     public void ignitionStart() {
         Heli.changeState(new Starting(Heli));
-        Heli.setIgitionPress();
     }
 
     @Override
@@ -488,6 +487,7 @@ class HelicopterBody extends Group{
 
 class HelicopterBlade extends GameObject{
     Rectangle HelicopterBlade;
+    double rotatingDegree;
     public HelicopterBlade() {
         HelicopterBlade = new Rectangle(3, 70);
         HelicopterBlade.setFill(Color.GRAY);
@@ -499,13 +499,21 @@ class HelicopterBlade extends GameObject{
         myRotation.setPivotY(55);
     }
 
+    public void Spin(double degree){
+        myRotation.setAngle(degree);
+    }
+
+    public void WindingUp(double delta){
+        rotatingDegree += delta;
+        Spin(getMyRotation() + rotatingDegree);
+
+    }
+
     @Override
     public void update() {
 
     }
-    public void rotateBlade(double rotation) {
-        myRotation.setAngle(rotation);
-    }
+
 }
 
 abstract class GameObject extends Group implements Updatable{
@@ -579,11 +587,15 @@ class Game extends Pane{
                 oldTime = now;
                 elapsedTime += delta;
 
-                if (heli.isIgnitionPress()) {
-                    heli.HeliBlade.rotateBlade(limit);
+
+
+                if(heli.getState() instanceof Starting) {
+                    heli.HeliBlade.WindingUp(delta);
                     heli.decreaseFuel();
-                    limit++;
+
                 }
+
+
                 if(pond.getfillCounter()>=100){
                     gameWin();
                 }
@@ -595,6 +607,11 @@ class Game extends Pane{
                 cloud.decrementPrecipitation(delta);
                 heli.setPivot(heli.myTranslate.getX(),
                         heli.myTranslate.getY());
+
+
+
+
+
             }
         };
         loop.start();
