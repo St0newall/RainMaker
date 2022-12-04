@@ -232,7 +232,7 @@ class Helicopter extends GameObject {
         SPEED = 0;
         ANGLE = 0;
         HEADING = 0;
-        FUEL = 25000;
+        FUEL = 1000;
         HelicopterBase = new HelicopterBody();
         HeliBlade = new HelicopterBlade();
         HeliBlade.setRotate(90);
@@ -297,6 +297,9 @@ class Helicopter extends GameObject {
     public double calculateAng(){
         double absAngle = (450-ANGLE)%360;
         return Math.toRadians(absAngle);
+    }
+    public double getFuel(){
+        return this.FUEL;
     }
 
     public Helicopter getHeli(){
@@ -456,6 +459,7 @@ class Game extends Pane{
     static Helicopter heli;
     static Helipad pad;
     static Cloud cloud;
+    AnimationTimer loop;
     Pond pond;
     Background background;
     static boolean winCondition;
@@ -467,7 +471,7 @@ class Game extends Pane{
 
     public Game() {
         super.setScaleY(-1);
-        AnimationTimer loop = new AnimationTimer() {
+        loop = new AnimationTimer() {
             double oldTime = 0;
             double elapsedTime = 0;
             double frameTime = 0;
@@ -479,10 +483,16 @@ class Game extends Pane{
                 oldTime = now;
                 elapsedTime += delta;
 
-                if (heli.isIgnitionPress())  {
+                if (heli.isIgnitionPress()) {
                     heli.HeliBlade.rotateBlade(limit);
                     heli.decreaseFuel();
                     limit++;
+                }
+                if(pond.getfillCounter()>=100){
+                    gameWin();
+                }
+                if(heli.getFuel() < 0) {
+                    gameLose();
                 }
                 heli.update();
                 pond.setPondFillText(delta);
@@ -492,6 +502,36 @@ class Game extends Pane{
             }
         };
         loop.start();
+    }
+
+    private void gameWin() {
+            alert = new Alert(Alert.AlertType.CONFIRMATION,winMsg,
+                    ButtonType.YES, ButtonType.NO);
+            alert.setOnHidden(evt -> {
+                if (alert.getResult() == ButtonType.YES) {
+                    init();
+                }
+                if(alert.getResult() == ButtonType.NO) {
+                    System.exit(0);
+                }
+            });
+            alert.show();
+    }
+
+    private void gameLose() {
+        loop.stop();
+            alert = new Alert(Alert.AlertType.CONFIRMATION, loseMsg,
+                    ButtonType.YES, ButtonType.NO);
+            alert.setOnHidden(evt -> {
+                if (alert.getResult() == ButtonType.YES) {
+                    init();
+                }
+                if(alert.getResult() == ButtonType.NO) {
+                    System.exit(0);
+                }
+            });
+            alert.show();
+
     }
 
     public static boolean setWinCondition(){
@@ -511,8 +551,9 @@ class Game extends Pane{
         return cloud.getCloud().getBoundsInParent().intersects(heli.getHeli()
                 .getBoundsInParent());
     }
-
     public void init(){
+        winCondition =false;
+        loseCondition =false;
         super.getChildren().clear();
         super.getChildren().setAll(
                 background = new Background(),
@@ -524,38 +565,6 @@ class Game extends Pane{
                 heli = new Helicopter()
 
         );
-    }
-
-    public void winOrLose(){
-
-        if(pond.getfillCounter()>100){
-            alert = new Alert(Alert.AlertType.CONFIRMATION, winMsg,
-                    ButtonType.YES, ButtonType.NO);
-            alert.setOnHidden(evt -> {
-                if (alert.getResult() == ButtonType.YES) {
-                    init();
-                }
-                if(alert.getResult() == ButtonType.NO) {
-                    System.exit(0);
-                }
-            });
-            alert.show();
-        }
-
-        if(loseCondition == false){
-            alert = new Alert(Alert.AlertType.CONFIRMATION,loseMsg,
-                    ButtonType.YES, ButtonType.NO);
-            alert.setOnHidden(evt -> {
-                if (alert.getResult() == ButtonType.YES) {
-                    init();
-                }
-                if(alert.getResult() == ButtonType.NO) {
-                    System.exit(0);
-                }
-            });
-            alert.show();
-        }
-
     }
 
 }
