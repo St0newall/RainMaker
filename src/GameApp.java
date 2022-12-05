@@ -199,11 +199,12 @@ class Helicopter extends GameObject {
     private static double ANGLE;
     private static double HEADING;
     boolean ignitionPress;
+    boolean isReady;
     private State state;
 
 
     public void increaseAcceleration(){
-        if(ignitionPress) {
+        if(getIsReady()) {
             if (SPEED <= 10) {
                 SPEED += 0.1;
             }
@@ -211,24 +212,17 @@ class Helicopter extends GameObject {
     }
 
     public void decreaseAcceleration(){
-        if(ignitionPress) {
+        if(getIsReady()) {
             if (SPEED >= -2) {
                 SPEED -= 0.2;
             }
         }
     }
 
-    boolean isIgnitionPress(){
-        return ignitionPress;
-    }
 
-    public void setIgitionPress(){
-        if(-.1<SPEED && SPEED<.1) {
-            ignitionPress = !ignitionPress;
-        }
-    }
     public Helicopter(){
         this.state = new Off(this);
+        isReady = false;
         ignitionPress = false;
         SPEED = 0;
         ANGLE = 0;
@@ -248,6 +242,10 @@ class Helicopter extends GameObject {
         add(fuel);
         add(HelicopterBase);
         add(HeliBlade);
+    }
+
+    public boolean getIsReady(){
+        return this.getState() instanceof Ready;
     }
 
     public void update() {
