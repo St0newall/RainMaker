@@ -504,7 +504,15 @@ class HelicopterBlade extends GameObject{
     }
 
     public void WindingUp(double delta){
-        rotatingDegree += delta;
+        if(Game.getInstance().heli.getState() instanceof Starting) {
+            rotatingDegree += delta;
+        }
+        Spin(getMyRotation() + rotatingDegree);
+
+    }
+
+    public void WindingDown(double delta){
+        rotatingDegree -= delta;
         Spin(getMyRotation() + rotatingDegree);
 
     }
@@ -561,12 +569,13 @@ class Game extends Pane{
     static Helipad pad;
     static Cloud cloud;
     AnimationTimer loop;
+    AnimationTimer heliloop;
     Pond pond;
     Background background;
     static boolean winCondition;
     static boolean loseCondition;
     static String winMsg = "Congratulations, You have won. Play" +
-            "Agin?";
+            "Again?";
     String loseMsg = "You lost. Play Again?";
 
     private static Alert alert;
@@ -575,11 +584,12 @@ class Game extends Pane{
 
     private Game() {
         super.setScaleY(-1);
-        loop = new AnimationTimer() {
+
+
+        heliloop = new AnimationTimer(){
             double oldTime = 0;
             double elapsedTime = 0;
             double frameTime = 0;
-            int limit = 0;
             public void handle(long now) {
                 if (oldTime <= 0) oldTime = now;
                 double delta = (now - oldTime) / 1e9;
@@ -589,12 +599,45 @@ class Game extends Pane{
 
 
 
+
                 if(heli.getState() instanceof Starting) {
                     heli.HeliBlade.WindingUp(delta);
-                    heli.decreaseFuel();
-
+                    System.out.println(heli.HeliBlade.rotatingDegree);
+                    if(heli.HeliBlade.rotatingDegree >= 5) {
+                        heli.changeState(new Ready(heli));
+                    }
                 }
 
+                if(heli.getState() instanceof Ready) {
+                    heli.HeliBlade.WindingUp(delta);
+                    System.out.println(heli.HeliBlade.rotatingDegree);
+                }
+
+                if(heli.getState() instanceof Stopping) {
+                    heli.HeliBlade.WindingDown(delta);
+                }
+
+
+            }
+        };
+
+        loop = new AnimationTimer() {
+            double oldTime = 0;
+            double elapsedTime = 0;
+            double frameTime = 0;
+
+            public void handle(long now) {
+                if (oldTime <= 0) oldTime = now;
+                double delta = (now - oldTime) / 1e9;
+                frameTime = (1 / (1 / delta)) * 1e3;
+                oldTime = now;
+                elapsedTime += delta;
+
+                if(heli.getState() instanceof Starting
+                        || heli.getState() instanceof Ready
+                        || heli.getState() instanceof Starting){
+                    heli.decreaseFuel();
+                }
 
                 if(pond.getfillCounter()>=100){
                     gameWin();
@@ -608,13 +651,10 @@ class Game extends Pane{
                 heli.setPivot(heli.myTranslate.getX(),
                         heli.myTranslate.getY());
 
-
-
-
-
             }
         };
         loop.start();
+        heliloop.start();
     }
 
     public static Game getInstance(){
