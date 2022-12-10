@@ -505,6 +505,12 @@ class HelicopterBlade extends GameObject{
         if(Game.getInstance().heli.getState() instanceof Starting) {
             rotatingDegree += delta;
         }
+
+        //TODO Add a max speed on blade
+        //TODO (TRANSITION between starting ready stopping
+        //TODO and set/change conditionals in main loop
+        //TODO Finish States for Off
+
         Spin(getMyRotation() + rotatingDegree);
 
     }
@@ -597,7 +603,6 @@ class Game extends Pane{
 
 
 
-
                 if(heli.getState() instanceof Starting) {
                     heli.HeliBlade.WindingUp(delta);
                     System.out.println(heli.HeliBlade.rotatingDegree);
@@ -613,6 +618,10 @@ class Game extends Pane{
 
                 if(heli.getState() instanceof Stopping) {
                     heli.HeliBlade.WindingDown(delta);
+                    if(heli.HeliBlade.rotatingDegree <= 0) {
+                        heli.changeState(new Off(heli));
+                    }
+
                 }
 
 
@@ -667,6 +676,7 @@ class Game extends Pane{
             alert.setOnHidden(evt -> {
                 if (alert.getResult() == ButtonType.YES) {
                     init();
+                    loop.start();
                 }
                 if(alert.getResult() == ButtonType.NO) {
                     System.exit(0);
@@ -682,6 +692,7 @@ class Game extends Pane{
             alert.setOnHidden(evt -> {
                 if (alert.getResult() == ButtonType.YES) {
                     init();
+                    loop.start();
                 }
                 if(alert.getResult() == ButtonType.NO) {
                     System.exit(0);
@@ -708,6 +719,8 @@ class Game extends Pane{
         return cloud.getCloud().getBoundsInParent().intersects(Game.getInstance().heli.getHeli()
                 .getBoundsInParent());
     }
+
+
     public void init(){
         winCondition =false;
         loseCondition =false;
@@ -765,7 +778,7 @@ public class GameApp extends Application {
                 Game.getInstance().heli.increateRotationRight();
             }
             if (e.getCode() == KeyCode.R) {
-                Game.getInstance();
+                Game.getInstance().init();
             }
             if (e.getCode() == KeyCode.SPACE) {
                 if(Game.isHelicopterCollidingWithCloud()){
