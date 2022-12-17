@@ -36,6 +36,23 @@ class Background extends GameObject{
     }
 }
 
+class GameText extends GameObject{
+    Text percentage;
+    public GameText(String counter){
+        percentage = new Text(counter);
+        percentage.setScaleY(-1);
+        add(percentage);
+    }
+    public GameText() {
+        this("");
+    }
+
+    public void setText(String counter) {
+        percentage.setText(counter);
+    }
+
+}
+
 
 class Ponds extends GamePaneCollection<Pond> {
     public Ponds() {
@@ -54,7 +71,7 @@ class Pond extends GamePaneCollection<Cloud> implements Updatable{
     Ellipse Pond;
     Random rand = new Random();
     private static double fillCounter;
-    Text PondFillText;
+    GameText PondFillText;
     int rand_intY = rand.nextInt(200,800);
     int rand_intX = rand.nextInt(0,800);
     int randRadandFill = rand.nextInt(15,30);
@@ -66,7 +83,7 @@ class Pond extends GamePaneCollection<Cloud> implements Updatable{
         Pond.setTranslateX(rand_intX);
         Pond.setFill(Color.BLUE);
 
-        PondFillText = new Text(String.format("%.0f",  fillCounter));
+        PondFillText = new GameText(String.format("%.0f",  fillCounter));
         PondFillText.setFill(Color.WHITE);
         PondFillText.setX(Pond.getTranslateX());
         PondFillText.setY(Pond.getTranslateY());
@@ -137,7 +154,7 @@ class Cloud extends GameObject implements Updatable, EventListener{
     Random rand = new Random();
 
     private static double pCounter;
-    Text precipitation;
+    GameText precipitation;
     int rand_intY = rand.nextInt(200,800);
     int rand_intX = rand.nextInt(0,400);
 
@@ -149,7 +166,7 @@ class Cloud extends GameObject implements Updatable, EventListener{
         Cloud.setFill(Color.WHITE);
 
 
-        precipitation = new Text (String.format("%.0f", pCounter));
+        precipitation = new GameText(String.format("%.0f", pCounter));
         precipitation.setFill(Color.BLUE);
         precipitation.setX(Cloud.getTranslateX());
         precipitation.setY(Cloud.getTranslateY());
@@ -171,7 +188,8 @@ class Cloud extends GameObject implements Updatable, EventListener{
     public void seeding() {
         Cloud.setFill(Color.rgb((int) (255-pCounter),
                 (int) (255-pCounter),(int) (255-pCounter)));
-        incrementCloudPrecipitation();
+        incrementCloudPrecipitation(); // Add a text class
+        //and incremenet that variation of it.
     }
 
     @Override
@@ -179,7 +197,8 @@ class Cloud extends GameObject implements Updatable, EventListener{
         myTranslate.setX(myTranslate.getX()+Wind.getWind().WIND_SPEED);
 
         if (Game.getInstance().isHelicopterCollidingWithCloud(this)) {
-            this.seeding();
+
+          this.seeding();
         }
 
     }
@@ -224,7 +243,7 @@ class Helipad extends GameObject{
 class Helicopter extends GameObject {
     HelicopterBody HelicopterBase;
     HelicopterBlade HeliBlade;
-    Text fuel;
+    GameText fuel;
     private static double SPEED;
     private static double FUEL;
     private static double ANGLE;
@@ -263,7 +282,7 @@ class Helicopter extends GameObject {
         HeliBlade = new HelicopterBlade();
         HeliBlade.setRotate(90);
 
-        fuel = new Text("F:" + FUEL);
+        fuel = new GameText("F:" + FUEL);
         fuel.setFill(Color.YELLOW);
         fuel.setX(400);
         fuel.setY(30);
@@ -689,6 +708,7 @@ class Game extends Pane{
                     if(heli.HeliBlade.rotatingDegree <= 0) {
                         heli.changeState(new Off(heli));
                     }
+
                 }
             }
         };
