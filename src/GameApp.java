@@ -228,7 +228,7 @@ class Cloud extends GameObject implements Updatable, EventListener{
 
     public void incrementCloudPrecipitation(double delta){
         if (getPrecipitationCounter() < 100) {
-            setPrecipitationCounter(precipitationCounter + 3 * delta); //
+            setPrecipitationCounter(precipitationCounter + 10 * delta); //
             // times looks fine
             //settiming
             precipitationLabel.setText(String.format("%.0f",
@@ -264,12 +264,6 @@ class Cloud extends GameObject implements Updatable, EventListener{
     @Override
     public void update() {
         myTranslate.setX(myTranslate.getX()+Wind.getWind().WIND_SPEED);
-
-        if (isOutOfBounds()) {
-            System.out.println("test");
-
-        }
-
         //always be decrementing,
     }
 
@@ -756,7 +750,6 @@ class Game extends Pane{
                     for (Pond pond : Pond.ponds){
                         cloud.decrementCloudPrecipitation(delta);
                             if(isSeeding) {
-                                System.out.println("Test");
                                 if (isHelicopterCollidingWithCloud(cloud)) {
                                 cloud.incrementCloudPrecipitation(delta);
                             }
@@ -774,8 +767,8 @@ class Game extends Pane{
                                 Math.pow(distance.getX(), 2) +
                                         Math.pow(distance.getY(), 2));
 
-                        if (distanceLine <= (pond.getSize()*2) * 3) {
-                            if (cloud.canCloudSeed()) {
+                        if (distanceLine <= (pond.getSize()*2) + (pond.getSize()*2)) {
+                            if (cloud.canCloudSeed() && isHelicopterCollidingWithCloud(cloud)) {
                                 pond.update();
                             }
                         }
@@ -786,7 +779,7 @@ class Game extends Pane{
               if(((Pond) Pond.ponds.getChildren().get(0)).getfillCounter() +
                       ((Pond) Pond.ponds.getChildren().get(1)).getfillCounter() +
                         ((Pond) Pond.ponds.getChildren().get(2)).getfillCounter()
-                        >= 240){// 0? Array //TODO
+                        >= 240){
                          gameWin();
                 }
 
@@ -819,7 +812,8 @@ class Game extends Pane{
 
     private void gameWin() {
         loop.stop();
-            alert = new Alert(Alert.AlertType.CONFIRMATION,winMsg,
+            alert = new Alert(Alert.AlertType.CONFIRMATION, winMsg + "Your " +
+                    "score was: " + heli.getFuel(),
                     ButtonType.YES, ButtonType.NO);
             alert.setOnHidden(evt -> {
                 if (alert.getResult() == ButtonType.YES) {
