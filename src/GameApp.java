@@ -1,5 +1,6 @@
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -12,6 +13,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Ellipse;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -70,41 +72,60 @@ class Ponds extends GamePaneCollection<Pond> {
 
 
 class Pond extends GamePaneCollection<Cloud> implements Updatable{
+    Circle pondT;
+
     static Ponds ponds = new Ponds();
-    Circle Pond;
     Random rand = new Random();
-    private static double fillCounter;
+    private double fillCounter;
     GameText PondFillText;
-    int rand_intY = rand.nextInt(200,800);
-    int rand_intX = rand.nextInt(0,800);
     int randRadandFill = rand.nextInt(15,30);
     public Pond(){
-        fillCounter = randRadandFill;
+        this.fillCounter = randRadandFill;
 
-        Pond = new Circle(rand_intX, rand_intX, randRadandFill, Color.BLUE);
-        Pond.setFill(Color.BLUE);
+        pondT = new Circle(rand.nextDouble(200,800),rand.nextDouble(30,800),
+                randRadandFill, Color.BLUE);
+        pondT.setFill(Color.BLUE);
 
-        add(Pond);
+        add(pondT);
 
-        PondFillText = new GameText(String.format("%.0f",  fillCounter));
+        PondFillText = new GameText(String.format("%.0f", getfillCounter()));
         PondFillText.percentage.setFill(Color.WHITE);
-        PondFillText.percentage.setX(Pond.getCenterX());
-        PondFillText.percentage.setY(Pond.getCenterY());
+        PondFillText.percentage.setX(pondT.getCenterX());
+        PondFillText.percentage.setY(pondT.getCenterY());
 
         add(PondFillText);
 
-
-
         ponds.add(this);
+    }
+    public double getPondX(){
+        return this.pondT.getCenterX();
+    }
+    public double getPondY(){
+        return this.pondT.getCenterY();
     }
 
     public double getfillCounter(){
-        return fillCounter;
+        return this.fillCounter;
     }
+    public void setFillCounter(double fillCounter) {
+        this.fillCounter = fillCounter;
 
+    }
     @Override
     public void update() {
-        //increaseing something here.
+        //System.out.println();
+        this   .incremenentFillCounter();
+
+
+    }
+    public void incremenentFillCounter(){
+        setFillCounter(fillCounter + 1);//settiming
+        PondFillText.setText(String.format("%.0f",
+                getfillCounter())
+                + "%");
+    }
+    public double getSize() {
+        return this.randRadandFill;
     }
 }
 
@@ -157,7 +178,6 @@ class Clouds extends GamePaneCollection<Cloud> implements Updatable {
 
     if(Cloud.clouds.getChildren().size() < 3) {
         new Cloud();
-
     }
 
     }
@@ -170,11 +190,11 @@ class Cloud extends GameObject implements Updatable, EventListener{
 
     private double precipitationCounter;
     GameText precipitationLabel;
-    int rand_intY = rand.nextInt(200,800);
-    int rand_intX = rand.nextInt(0,400);
+    int rand_intY = rand.nextInt(150,800);
+
 
     public Cloud(){
-        Cloud = new Circle(rand_intX,rand_intY,45);
+        Cloud = new Circle(0,rand_intY,45);
         Cloud.setFill(Color.WHITE);
         Cloud.setOpacity(1);
         add(Cloud);
@@ -190,7 +210,6 @@ class Cloud extends GameObject implements Updatable, EventListener{
 
         precipitationLabel.percentage.setX(Cloud.getCenterX());
         precipitationLabel.percentage.setY(Cloud.getCenterY());
-
 
         add(precipitationLabel);
 
@@ -226,6 +245,10 @@ class Cloud extends GameObject implements Updatable, EventListener{
 
     public boolean isOutOfBounds(){
         return this.getBoundsInParent().getMinX() > 800;
+    }
+
+    public boolean canCloudSeed(){
+        return this.precipitationCounter > 30;
     }
 
     @Override
@@ -495,7 +518,40 @@ class Ready extends State{
         //starts increasing counter
         //if above 30
         //then seeds surrounding ponds
-        Cloud.clouds.update();
+        for (Cloud cloud : Cloud.clouds) {
+            for (Pond pond : Pond.ponds) {
+
+                Point2D pondPoint = new Point2D(pond.getPondX(), pond.getPondY());
+                Point2D cloudPoint = new Point2D(
+                        cloud.getBoundsInParent().getCenterX(),
+                        cloud.getBoundsInParent().getCenterY());
+
+                //distanceTest =
+                        //new Line(cloud.getBoundsInParent().getCenterX(),
+                               // cloud.getBoundsInParent().getCenterY()
+                               // , pond.getPondX(), pond.getPondY());
+
+                //distanceTest.setFill(Color.BLACK);
+
+                // Game.getChildren().add(distanceTest);
+
+
+                Point2D distance = new Point2D(
+                        Math.abs(pondPoint.getX() - cloudPoint.getX()),
+                        Math.abs(pondPoint.getY() - cloudPoint.getY()));
+
+                double distanceLine = Math.sqrt(
+                        Math.pow(distance.getX(), 2) +
+                                Math.pow(distance.getY(), 2));
+
+                if (distanceLine <= pond.getSize() * 10) {
+                    //if (cloud.canCloudSeed()) {
+                    pond.update();
+                    // }
+                }
+                System.out.println(distance);
+            }
+        }
             //
     }
 }
@@ -722,45 +778,11 @@ class Game extends Pane{
     private static Alert alert;
 
     private static Game Game = new Game();
+    private Line distanceTest;
+
 
     private Game() { //public
         super.setScaleY(-1);
-
-
-        heliloop = new AnimationTimer(){
-            double oldTime = 0;
-            double elapsedTime = 0;
-            double frameTime = 0;
-            public void handle(long now) {
-                if (oldTime <= 0) oldTime = now;
-                double delta = (now - oldTime) / 1e9;
-                frameTime = (1 / (1 / delta)) * 1e3;
-                oldTime = now;
-                elapsedTime += delta;
-
-
-                if(heli.getState() instanceof Starting) {
-                    heli.HeliBlade.WindingUp(delta);
-                    System.out.println(heli.HeliBlade.rotatingDegree);
-                    if(heli.HeliBlade.rotatingDegree >= 5) {
-                        heli.changeState(new Ready(heli));
-                    }
-                }
-
-                if(heli.getState() instanceof Ready) {
-                    heli.HeliBlade.WindingUp(delta);
-                    System.out.println(heli.HeliBlade.rotatingDegree);
-                }
-
-                if(heli.getState() instanceof Stopping) {
-                    heli.HeliBlade.WindingDown(delta);
-                    if(heli.HeliBlade.rotatingDegree <= 0) {
-                        heli.changeState(new Off(heli));
-                    }
-
-                }
-            }
-        };
 
         loop = new AnimationTimer() {
             double oldTime = 0;
@@ -775,17 +797,33 @@ class Game extends Pane{
                 elapsedTime += delta;
 
                 if(heli.getState() instanceof Starting
-                        || heli.getState() instanceof Ready){
+                        || heli.getState() instanceof Ready) {
+                    heli.HeliBlade.WindingUp(delta);
                     heli.decreaseFuel();
+                    if(heli.HeliBlade.rotatingDegree >= 5) {
+                        heli.changeState(new Ready(heli));
+                    }
+                }
+
+                if(heli.getState() instanceof Stopping) {
+                    heli.HeliBlade.WindingDown(delta);
+                    if(heli.HeliBlade.rotatingDegree <= 0) {
+                        heli.changeState(new Off(heli));
+                    }
                 }
 
                 if(heli.getState() instanceof Stopping) {
                     heli.decreaseAcceleration();
                 }
 
-              if(((Pond) Pond.ponds.getChildren().get(0)).getfillCounter() >= 100){// 0? Array //TODO
-                   gameWin();
-                }
+              //if(((Pond) Pond.ponds.getChildren().get(0)).getfillCounter()
+                // >= 100){// 0? Array //TODO
+                  // gameWin();
+                //}
+
+
+
+
 
 
 
@@ -793,7 +831,6 @@ class Game extends Pane{
                    gameLose();
                 }
                 heli.update();
-                Pond.ponds.update();
                 Cloud.clouds.update();
 
                 heli.setPivot(heli.myTranslate.getX(),
@@ -801,7 +838,6 @@ class Game extends Pane{
             }
         };
         loop.start();
-        heliloop.start();
     }
 
     public static Game getInstance(){
@@ -878,10 +914,11 @@ class Game extends Pane{
         new Cloud();
         new Cloud();
         new Cloud();
+        distanceTest = new Line();
         heli = new Helicopter();
 
         super.getChildren().addAll(background,pad,Pond.ponds,Cloud.clouds,
-                heli);
+                distanceTest, heli);
     }
 
 }
