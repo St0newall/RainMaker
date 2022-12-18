@@ -81,7 +81,7 @@ class Pond extends GamePaneCollection<Cloud> implements Updatable{
     public Pond(){
         this.fillCounter = randRadandFill;
 
-        pondT = new Circle(rand.nextDouble(200,800),rand.nextDouble(30,800),
+        pondT = new Circle(rand.nextDouble(100,700),rand.nextDouble(200,700),
                 randRadandFill, Color.BLUE);
         pondT.setFill(Color.BLUE);
 
@@ -110,20 +110,21 @@ class Pond extends GamePaneCollection<Cloud> implements Updatable{
         this.fillCounter = fillCounter;
     }
     //@Override
-    public void update(double delta) {
-        this.incremenentFillCounter();
+    public void update() {
+        this.incremenentFillCounter(Game.getInstance().delta());
     }// how to pass delta in for update
-    public void incremenentFillCounter(){
+
+    public void incremenentFillCounter(double delta){
         if(getfillCounter()<100) {
-            setFillCounter(fillCounter + 1);//settiming
+            setFillCounter(fillCounter + 2 * delta);//settiming
             PondFillText.setText(String.format("%.0f",
                     getfillCounter())
                     + "%");
-            this.pondT.setRadius(getSize()+(fillCounter)/2);
+            this.pondT.setRadius((getfillCounter()));
         }
     }
     public double getSize() {
-        return this.randRadandFill;
+        return this.pondT.getRadius();
     }
 }
 
@@ -608,18 +609,9 @@ class HelicopterBlade extends GameObject{
 
     public void WindingUp(double delta){
         if(Game.getInstance().heli.getState() instanceof Starting) {
-            rotatingDegree += delta;
+            rotatingDegree +=  Math.sqrt(delta);
 
         }
-
-        //TODO Add a max speed on blade
-        //TODO Fix blade timing (Use Delta)
-        //TODO refactor and clean
-
-
-
-        //TODO and set/change conditionals in main loop
-        //TODO Fix off state where you cant move
 
         Spin(getMyRotation() + rotatingDegree);
 
@@ -641,7 +633,7 @@ interface EventListener{
 }
 
 class Wind{
-    public double WIND_SPEED = .25;
+    public double WIND_SPEED = .5;
     private final List<EventListener> windobserver;
     private static final Wind wind = new Wind();
 
@@ -722,6 +714,7 @@ class Game extends Pane{
     private static Game Game = new Game();
     private Line distanceTest;
     public boolean isSeeding;
+    static double delta;
 
 
     private Game() { //public
@@ -734,7 +727,7 @@ class Game extends Pane{
 
             public void handle(long now) {
                 if (oldTime <= 0) oldTime = now;
-                double delta = (now - oldTime) / 1e9;
+                delta = (now - oldTime) / 1e9;
                 frameTime = (1 / (1 / delta)) * 1e3;
                 oldTime = now;
                 elapsedTime += delta;
@@ -743,7 +736,7 @@ class Game extends Pane{
                         || heli.getState() instanceof Ready) {
                     heli.HeliBlade.WindingUp(delta);
                     heli.decreaseFuel();
-                    if(heli.HeliBlade.rotatingDegree >= 5) {
+                    if(heli.HeliBlade.rotatingDegree >= 25) {
                         heli.changeState(new Ready(heli));
                     }
                 }
@@ -768,7 +761,6 @@ class Game extends Pane{
                                 cloud.incrementCloudPrecipitation(delta);
                             }
                         }
-
                         Point2D pondPoint = new Point2D(pond.getPondX(), pond.getPondY());
                         Point2D cloudPoint = new Point2D(
                                 cloud.getBoundsInParent().getCenterX(),
@@ -782,7 +774,7 @@ class Game extends Pane{
                                 Math.pow(distance.getX(), 2) +
                                         Math.pow(distance.getY(), 2));
 
-                        if (distanceLine <= (pond.getSize() * 6)) {
+                        if (distanceLine <= (pond.getSize()*2) * 3) {
                             if (cloud.canCloudSeed()) {
                                 pond.update();
                             }
@@ -791,10 +783,12 @@ class Game extends Pane{
                 }
 
 
-              //if(((Pond) Pond.ponds.getChildren().get(0)).getfillCounter()
-                // >= 100){// 0? Array //TODO
-                  // gameWin();
-                //}
+              if(((Pond) Pond.ponds.getChildren().get(0)).getfillCounter() +
+                      ((Pond) Pond.ponds.getChildren().get(1)).getfillCounter() +
+                        ((Pond) Pond.ponds.getChildren().get(2)).getfillCounter()
+                        >= 240){// 0? Array //TODO
+                         gameWin();
+                }
 
 
                 if(heli.getFuel() < 0) {
@@ -810,6 +804,10 @@ class Game extends Pane{
         loop.start();
     }
 
+    public double delta(){
+        return delta;
+    }
+
     public boolean canSeed(){
         return isSeeding =true;
     }
@@ -820,6 +818,7 @@ class Game extends Pane{
     }
 
     private void gameWin() {
+        loop.stop();
             alert = new Alert(Alert.AlertType.CONFIRMATION,winMsg,
                     ButtonType.YES, ButtonType.NO);
             alert.setOnHidden(evt -> {
