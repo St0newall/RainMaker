@@ -71,7 +71,7 @@ class Ponds extends GamePaneCollection<Pond> {
 
 class Pond extends GamePaneCollection<Cloud> implements Updatable{
     static Ponds ponds = new Ponds();
-    Ellipse Pond;
+    Circle Pond;
     Random rand = new Random();
     private static double fillCounter;
     GameText PondFillText;
@@ -81,18 +81,19 @@ class Pond extends GamePaneCollection<Cloud> implements Updatable{
     public Pond(){
         fillCounter = randRadandFill;
 
-        Pond = new Ellipse(randRadandFill,randRadandFill);
-        Pond.setTranslateY(rand_intY);
-        Pond.setTranslateX(rand_intX);
+        Pond = new Circle(rand_intX, rand_intX, randRadandFill, Color.BLUE);
         Pond.setFill(Color.BLUE);
+
+        add(Pond);
 
         PondFillText = new GameText(String.format("%.0f",  fillCounter));
         PondFillText.percentage.setFill(Color.WHITE);
+        PondFillText.percentage.setX(Pond.getCenterX());
+        PondFillText.percentage.setY(Pond.getCenterY());
 
-        PondFillText.percentage.setX(Pond.getTranslateX());
-        PondFillText.percentage.setY(Pond.getTranslateY());
+        add(PondFillText);
 
-        add(Pond);
+
 
         ponds.add(this);
     }
