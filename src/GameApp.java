@@ -13,7 +13,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Ellipse;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -47,10 +46,7 @@ class GameText extends GameObject {
         percentage.setScaleY(-1);
         add(percentage);
     }
-    public GameText() {
-        this("");
 
-    }
     public void setText(String counter) {
         percentage.setText(counter);
     }
@@ -228,7 +224,7 @@ class Cloud extends GameObject implements Updatable, EventListener{
 
     public void incrementCloudPrecipitation(double delta){
         if (getPrecipitationCounter() < 100) {
-            setPrecipitationCounter(precipitationCounter + 10 * delta); //
+            setPrecipitationCounter(precipitationCounter + 10 * delta);
             // times looks fine
             //settiming
             precipitationLabel.setText(String.format("%.0f",
@@ -267,12 +263,6 @@ class Cloud extends GameObject implements Updatable, EventListener{
         //always be decrementing,
     }
 
-
-
-    @Override
-    public void updateWind(double windspeed) {
-
-    }
 }
 class Helipad extends GameObject{
     private static final double HELI_PAD_LENGTH = 80;
@@ -312,7 +302,7 @@ class Helicopter extends GameObject {
     HelicopterBlade HeliBlade;
     GameText fuel;
     private static double SPEED;
-    private static double FUEL;
+    private double FUEL;
     private static double ANGLE;
     private static double HEADING;
     boolean ignitionPress;
@@ -410,9 +400,6 @@ class Helicopter extends GameObject {
     public void decreaseFuel(){
         FUEL = FUEL - 1;
         fuel.setText("F:"+ FUEL);
-        if(FUEL<=0) {
-            Game.setLoseCondition();
-        }
     }
 
     public double calculateAng(){
@@ -606,13 +593,12 @@ class HelicopterBlade extends GameObject{
             rotatingDegree +=  Math.sqrt(delta);
 
         }
-
         Spin(getMyRotation() + rotatingDegree);
 
     }
 
     public void WindingDown(double delta){
-        rotatingDegree -= delta;
+        rotatingDegree -= Math.sqrt(delta);
         Spin(getMyRotation() + rotatingDegree);
 
     }
@@ -621,9 +607,6 @@ class HelicopterBlade extends GameObject{
     public void update() {
 
     }
-}
-interface EventListener{
-    void updateWind(double windspeed);
 }
 
 class Wind{
@@ -706,7 +689,6 @@ class Game extends Pane{
     private static Alert alert;
 
     private static Game Game = new Game();
-    private Line distanceTest;
     public boolean isSeeding;
     static double delta;
 
@@ -768,7 +750,7 @@ class Game extends Pane{
                                         Math.pow(distance.getY(), 2));
 
                         if (distanceLine <= (pond.getSize()*2) + (pond.getSize()*2)) {
-                            if (cloud.canCloudSeed() && isHelicopterCollidingWithCloud(cloud)) {
+                            if (cloud.canCloudSeed()) {
                                 pond.update();
                             }
                         }
@@ -779,7 +761,7 @@ class Game extends Pane{
               if(((Pond) Pond.ponds.getChildren().get(0)).getfillCounter() +
                       ((Pond) Pond.ponds.getChildren().get(1)).getfillCounter() +
                         ((Pond) Pond.ponds.getChildren().get(2)).getfillCounter()
-                        >= 240){
+                        >= 240 && heli.getState() instanceof Off){
                          gameWin();
                 }
 
@@ -812,8 +794,8 @@ class Game extends Pane{
 
     private void gameWin() {
         loop.stop();
-            alert = new Alert(Alert.AlertType.CONFIRMATION, winMsg + "Your " +
-                    "score was: " + heli.getFuel(),
+            alert = new Alert(Alert.AlertType.CONFIRMATION, winMsg +
+                    " Your score was: " + heli.getFuel(),
                     ButtonType.YES, ButtonType.NO);
             alert.setOnHidden(evt -> {
                 if (alert.getResult() == ButtonType.YES) {
@@ -845,14 +827,6 @@ class Game extends Pane{
 
     }
 
-    public static boolean setWinCondition(){
-        return !winCondition;
-    }
-
-    public static boolean setLoseCondition(){
-        return !loseCondition;
-    }
-
     public static boolean isHelicopterinsideHeliPad(){
         return pad.getHelipad().getBoundsInParent().intersects(
                 getInstance().heli.getHeli().getBoundsInParent());
@@ -880,11 +854,9 @@ class Game extends Pane{
         new Cloud();
         new Cloud();
         new Cloud();
-        distanceTest = new Line();
         heli = new Helicopter();
 
-        super.getChildren().addAll(background,pad,Pond.ponds,Cloud.clouds,
-                distanceTest, heli);
+        super.getChildren().addAll(background,pad,Pond.ponds,Cloud.clouds,heli);
     }
 
     public boolean cantSeed() {
@@ -893,8 +865,8 @@ class Game extends Pane{
 }
 
 public class GameApp extends Application {
-    private int SCENE_WIDTH = 800;
-    private int SCENE_HEIGHT = 800;
+    private final int SCENE_WIDTH = 800;
+    private final int SCENE_HEIGHT = 800;
 
     public static void main(String[] args) {
         launch(args);
