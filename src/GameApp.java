@@ -131,10 +131,6 @@ class GamePaneCollection<T> extends Pane implements Iterable<T> {
         this.getChildren().add(n);
     }
 
-    public void remove(Node n) {
-        this.getChildren().remove(n);
-    }
-
     public void clear() {
         this.getChildren().clear();
     }
@@ -149,6 +145,21 @@ class Clouds extends GamePaneCollection<Cloud> implements Updatable {
         for (Cloud cloud : this) {
             cloud.update();
         }
+
+    for(Iterator<Cloud> iterator = Cloud.clouds.iterator();
+        iterator.hasNext();) {
+        Cloud cloud =iterator.next();
+        if(cloud.isOutOfBounds()) {
+            Wind.getWind().nowind(cloud);
+            iterator.remove();
+        }
+    }
+
+    if(Cloud.clouds.getChildren().size() < 3) {
+        new Cloud();
+
+    }
+
     }
 }
 
@@ -170,7 +181,6 @@ class Cloud extends GameObject implements Updatable, EventListener{
 
         precipitationCounter = 0;
 
-
         precipitationLabel =
                 new GameText(String.format("%.0f", precipitationCounter)
                         + "%");
@@ -187,6 +197,7 @@ class Cloud extends GameObject implements Updatable, EventListener{
 
         clouds.add(this);
         Wind.getWind().wind(this);
+
     }
 
     public void setPrecipitationCounter(double precipitationCounter) {
@@ -213,7 +224,9 @@ class Cloud extends GameObject implements Updatable, EventListener{
         //set timing
     }
 
-
+    public boolean isOutOfBounds(){
+        return this.getBoundsInParent().getMinX() > 800;
+    }
 
     @Override
     public void update() {
@@ -221,8 +234,15 @@ class Cloud extends GameObject implements Updatable, EventListener{
         if (Game.getInstance().isHelicopterCollidingWithCloud(this)) {
           this.incrementCloudPrecipitation();
         }
+        if (isOutOfBounds()) {
+            System.out.println("test");
+            this.setTranslateX(0);
+        }
+
         //always be decrementing,
     }
+
+
 
     @Override
     public void updateWind(double windspeed) {
@@ -471,6 +491,10 @@ class Ready extends State{
     @Override
     public void Seeding() {
             //
+        //checks if intersects
+        //starts increasing counter
+        //if above 30
+        //then seeds surrounding ponds
         Cloud.clouds.update();
             //
     }
