@@ -73,7 +73,6 @@ class Ponds extends GamePaneCollection<Pond> {
 
 class Pond extends GamePaneCollection<Cloud> implements Updatable{
     Circle pondT;
-
     static Ponds ponds = new Ponds();
     Random rand = new Random();
     private double fillCounter;
@@ -88,7 +87,7 @@ class Pond extends GamePaneCollection<Cloud> implements Updatable{
 
         add(pondT);
 
-        PondFillText = new GameText(String.format("%.0f", getfillCounter()));
+        PondFillText = new GameText(String.format("%.0f", fillCounter) + "%");
         PondFillText.percentage.setFill(Color.WHITE);
         PondFillText.percentage.setX(pondT.getCenterX());
         PondFillText.percentage.setY(pondT.getCenterY());
@@ -109,20 +108,19 @@ class Pond extends GamePaneCollection<Cloud> implements Updatable{
     }
     public void setFillCounter(double fillCounter) {
         this.fillCounter = fillCounter;
-
     }
-    @Override
-    public void update() {
-        //System.out.println();
-        this   .incremenentFillCounter();
-
-
-    }
+    //@Override
+    public void update(double delta) {
+        this.incremenentFillCounter();
+    }// how to pass delta in for update
     public void incremenentFillCounter(){
-        setFillCounter(fillCounter + 1);//settiming
-        PondFillText.setText(String.format("%.0f",
-                getfillCounter())
-                + "%");
+        if(getfillCounter()<100) {
+            setFillCounter(fillCounter + 1);//settiming
+            PondFillText.setText(String.format("%.0f",
+                    getfillCounter())
+                    + "%");
+            this.pondT.setRadius(getSize()+(fillCounter)/2);
+        }
     }
     public double getSize() {
         return this.randRadandFill;
@@ -227,9 +225,11 @@ class Cloud extends GameObject implements Updatable, EventListener{
         return this.precipitationCounter;
     }
 
-    public void incrementCloudPrecipitation(){
+    public void incrementCloudPrecipitation(double delta){
         if (getPrecipitationCounter() < 100) {
-            setPrecipitationCounter(precipitationCounter + 1);//settiming
+            setPrecipitationCounter(precipitationCounter + 3 * delta); //
+            // times looks fine
+            //settiming
             precipitationLabel.setText(String.format("%.0f",
                     getPrecipitationCounter())
                     + "%");
@@ -239,8 +239,17 @@ class Cloud extends GameObject implements Updatable, EventListener{
                 (int) (255 - getPrecipitationCounter()), (int) (255 - getPrecipitationCounter())));
     }
 
-    public void decrementCloudPrecipitation(){
-        //set timing
+    public void decrementCloudPrecipitation(double delta){
+        if(getPrecipitationCounter()>0) {
+            setPrecipitationCounter(precipitationCounter - (delta/2));
+            precipitationLabel.setText(String.format("%.0f",
+                    getPrecipitationCounter())
+                    + "%");
+
+           Cloud.setFill(Color.rgb((int) (255 - getPrecipitationCounter()),
+                   (int) (255 - getPrecipitationCounter()),
+                   (int) (255 - getPrecipitationCounter())));
+        }
     }
 
     public boolean isOutOfBounds(){
@@ -254,12 +263,10 @@ class Cloud extends GameObject implements Updatable, EventListener{
     @Override
     public void update() {
         myTranslate.setX(myTranslate.getX()+Wind.getWind().WIND_SPEED);
-        if (Game.getInstance().isHelicopterCollidingWithCloud(this)) {
-          this.incrementCloudPrecipitation();
-        }
+
         if (isOutOfBounds()) {
             System.out.println("test");
-            this.setTranslateX(0);
+
         }
 
         //always be decrementing,
@@ -447,7 +454,6 @@ abstract class State{
     }
 
     public abstract void ignitionStart();
-    public abstract void Seeding();
 
 
 }
@@ -460,11 +466,6 @@ class Off extends State{
     @Override
     public void ignitionStart() {
         Heli.changeState(new Starting(Heli));
-    }
-
-    @Override
-    public void Seeding() {
-
     }
 }
 class Starting extends State {
@@ -479,10 +480,6 @@ class Starting extends State {
         //STARTING CAN GO TO
     }
 
-    @Override
-    public void Seeding() {
-
-    }
 }
 class Stopping extends State{
     Stopping(Helicopter Heli) {
@@ -492,11 +489,6 @@ class Stopping extends State{
     @Override
     public void ignitionStart() {
         Heli.changeState(new Starting(Heli));
-    }
-
-    @Override
-    public void Seeding() {
-
     }
 }
 
@@ -509,50 +501,6 @@ class Ready extends State{
     @Override
     public void ignitionStart() {
         Heli.changeState(new Stopping(Heli));
-    }
-
-    @Override
-    public void Seeding() {
-            //
-        //checks if intersects
-        //starts increasing counter
-        //if above 30
-        //then seeds surrounding ponds
-        for (Cloud cloud : Cloud.clouds) {
-            for (Pond pond : Pond.ponds) {
-
-                Point2D pondPoint = new Point2D(pond.getPondX(), pond.getPondY());
-                Point2D cloudPoint = new Point2D(
-                        cloud.getBoundsInParent().getCenterX(),
-                        cloud.getBoundsInParent().getCenterY());
-
-                //distanceTest =
-                        //new Line(cloud.getBoundsInParent().getCenterX(),
-                               // cloud.getBoundsInParent().getCenterY()
-                               // , pond.getPondX(), pond.getPondY());
-
-                //distanceTest.setFill(Color.BLACK);
-
-                // Game.getChildren().add(distanceTest);
-
-
-                Point2D distance = new Point2D(
-                        Math.abs(pondPoint.getX() - cloudPoint.getX()),
-                        Math.abs(pondPoint.getY() - cloudPoint.getY()));
-
-                double distanceLine = Math.sqrt(
-                        Math.pow(distance.getX(), 2) +
-                                Math.pow(distance.getY(), 2));
-
-                if (distanceLine <= pond.getSize() * 10) {
-                    //if (cloud.canCloudSeed()) {
-                    pond.update();
-                    // }
-                }
-                System.out.println(distance);
-            }
-        }
-            //
     }
 }
 
@@ -693,7 +641,7 @@ interface EventListener{
 }
 
 class Wind{
-    public double WIND_SPEED = .5;
+    public double WIND_SPEED = .25;
     private final List<EventListener> windobserver;
     private static final Wind wind = new Wind();
 
@@ -709,11 +657,6 @@ class Wind{
         windobserver.remove(wind);
     }
 
-    public void update(double speed) {
-        for (EventListener wind : windobserver) {
-            wind.updateWind(speed);
-        }
-    }
 
     public static Wind getWind() {
         return wind;
@@ -767,7 +710,6 @@ class Game extends Pane{
     static Helipad pad;
 
     AnimationTimer loop;
-    AnimationTimer heliloop;
     Background background;
     static boolean winCondition;
     static boolean loseCondition;
@@ -779,11 +721,12 @@ class Game extends Pane{
 
     private static Game Game = new Game();
     private Line distanceTest;
+    public boolean isSeeding;
 
 
     private Game() { //public
         super.setScaleY(-1);
-
+        isSeeding = false;
         loop = new AnimationTimer() {
             double oldTime = 0;
             double elapsedTime = 0;
@@ -816,15 +759,42 @@ class Game extends Pane{
                     heli.decreaseAcceleration();
                 }
 
+                for (Cloud cloud : Cloud.clouds) {
+                    for (Pond pond : Pond.ponds){
+                        cloud.decrementCloudPrecipitation(delta);
+                            if(isSeeding) {
+                                System.out.println("Test");
+                                if (isHelicopterCollidingWithCloud(cloud)) {
+                                cloud.incrementCloudPrecipitation(delta);
+                            }
+                        }
+
+                        Point2D pondPoint = new Point2D(pond.getPondX(), pond.getPondY());
+                        Point2D cloudPoint = new Point2D(
+                                cloud.getBoundsInParent().getCenterX(),
+                                cloud.getBoundsInParent().getCenterY());
+
+                        Point2D distance = new Point2D(
+                                Math.abs(pondPoint.getX() - cloudPoint.getX()),
+                                Math.abs(pondPoint.getY() - cloudPoint.getY()));
+
+                        double distanceLine = Math.sqrt(
+                                Math.pow(distance.getX(), 2) +
+                                        Math.pow(distance.getY(), 2));
+
+                        if (distanceLine <= (pond.getSize() * 6)) {
+                            if (cloud.canCloudSeed()) {
+                                pond.update();
+                            }
+                        }
+                    }
+                }
+
+
               //if(((Pond) Pond.ponds.getChildren().get(0)).getfillCounter()
                 // >= 100){// 0? Array //TODO
                   // gameWin();
                 //}
-
-
-
-
-
 
 
                 if(heli.getFuel() < 0) {
@@ -840,6 +810,9 @@ class Game extends Pane{
         loop.start();
     }
 
+    public boolean canSeed(){
+        return isSeeding =true;
+    }
     public static Game getInstance(){
         if (Game == null)
             Game = new Game();
@@ -921,6 +894,9 @@ class Game extends Pane{
                 distanceTest, heli);
     }
 
+    public boolean cantSeed() {
+        return isSeeding = false;
+    }
 }
 
 public class GameApp extends Application {
@@ -973,9 +949,16 @@ public class GameApp extends Application {
             }
             
             if (e.getCode() == KeyCode.SPACE){
-                Game.getInstance().heli.getState().Seeding();
+                Game.getInstance().canSeed();
             }
         });
 
+        scene.setOnKeyReleased(e -> {
+            if(e.getCode() == KeyCode.SPACE) {
+                Game.getInstance().cantSeed();
+            }
+        });
+
+        }
     }
-}
+
