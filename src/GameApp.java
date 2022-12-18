@@ -77,13 +77,15 @@ class Pond extends GamePaneCollection<Cloud> implements Updatable{
     public Pond(){
         this.fillCounter = randRadandFill;
 
-        pondT = new Circle(rand.nextDouble(100,700),rand.nextDouble(200,700),
+        pondT = new Circle(rand.nextDouble(100,700),
+                rand.nextDouble(200,700),
                 randRadandFill, Color.BLUE);
         pondT.setFill(Color.BLUE);
 
         add(pondT);
 
-        PondFillText = new GameText(String.format("%.0f", fillCounter) + "%");
+        PondFillText = new GameText(String.format("%.0f", fillCounter)
+                + "%");
         PondFillText.percentage.setFill(Color.WHITE);
         PondFillText.percentage.setX(pondT.getCenterX());
         PondFillText.percentage.setY(pondT.getCenterY());
@@ -197,7 +199,8 @@ class Cloud extends GameObject implements Updatable, EventListener{
         precipitationCounter = 0;
 
         precipitationLabel =
-                new GameText(String.format("%.0f", precipitationCounter)
+                new GameText(String.format("%.0f",
+                        precipitationCounter)
                         + "%");
         precipitationLabel.percentage.setFill(Color.BLUE);
 
@@ -233,7 +236,8 @@ class Cloud extends GameObject implements Updatable, EventListener{
         }
 
         Cloud.setFill(Color.rgb((int) (255 - getPrecipitationCounter()),
-                (int) (255 - getPrecipitationCounter()), (int) (255 - getPrecipitationCounter())));
+                (int) (255 - getPrecipitationCounter()),
+                (int) (255 - getPrecipitationCounter())));
     }
 
     public void decrementCloudPrecipitation(double delta){
@@ -736,20 +740,23 @@ class Game extends Pane{
                                 cloud.incrementCloudPrecipitation(delta);
                             }
                         }
-                        Point2D pondPoint = new Point2D(pond.getPondX(), pond.getPondY());
+                        Point2D pondPoint = new Point2D(pond.getPondX(),
+                                pond.getPondY());
                         Point2D cloudPoint = new Point2D(
                                 cloud.getBoundsInParent().getCenterX(),
                                 cloud.getBoundsInParent().getCenterY());
 
                         Point2D distance = new Point2D(
                                 Math.abs(pondPoint.getX() - cloudPoint.getX()),
-                                Math.abs(pondPoint.getY() - cloudPoint.getY()));
+                                Math.abs(pondPoint.getY() -
+                                        cloudPoint.getY()));
 
                         double distanceLine = Math.sqrt(
                                 Math.pow(distance.getX(), 2) +
                                         Math.pow(distance.getY(), 2));
 
-                        if (distanceLine <= (pond.getSize()*2) + (pond.getSize()*2)) {
+                        if (distanceLine <= (pond.getSize()*2) +
+                                (pond.getSize()*2)) {
                             if (cloud.canCloudSeed()) {
                                 pond.update();
                             }
@@ -759,8 +766,10 @@ class Game extends Pane{
 
 
               if(((Pond) Pond.ponds.getChildren().get(0)).getfillCounter() +
-                      ((Pond) Pond.ponds.getChildren().get(1)).getfillCounter() +
-                        ((Pond) Pond.ponds.getChildren().get(2)).getfillCounter()
+                      ((Pond) Pond.ponds.getChildren().get(1)).
+                              getfillCounter() +
+                        ((Pond) Pond.ponds.getChildren().get(2)).
+                                getfillCounter()
                         >= 240 && heli.getState() instanceof Off){
                          gameWin();
                 }
@@ -877,7 +886,8 @@ public class GameApp extends Application {
 
         Game.getInstance().setScaleY(-1);
         Game.getInstance().init();
-        Scene scene = new Scene(Game.getInstance(), SCENE_WIDTH, SCENE_HEIGHT);
+        Scene scene = new Scene(Game.getInstance(), SCENE_WIDTH,
+                SCENE_HEIGHT);
         primaryStage.setScene(scene);
         scene.setFill(Color.BLACK);
         primaryStage.setResizable(false);
