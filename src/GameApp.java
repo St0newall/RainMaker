@@ -10,8 +10,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
@@ -36,7 +38,7 @@ class Background extends GameObject{
     }
 }
 
-class GameText extends GameObject{
+class GameText extends GameObject {
     Text percentage;
     public GameText(String counter){
         percentage = new Text(counter);
@@ -45,11 +47,12 @@ class GameText extends GameObject{
     }
     public GameText() {
         this("");
-    }
 
+    }
     public void setText(String counter) {
         percentage.setText(counter);
     }
+
 
 }
 
@@ -84,13 +87,13 @@ class Pond extends GamePaneCollection<Cloud> implements Updatable{
         Pond.setFill(Color.BLUE);
 
         PondFillText = new GameText(String.format("%.0f",  fillCounter));
-        PondFillText.setFill(Color.WHITE);
-        PondFillText.setX(Pond.getTranslateX());
-        PondFillText.setY(Pond.getTranslateY());
-        PondFillText.setScaleY(-1);
+        PondFillText.percentage.setFill(Color.WHITE);
+
+        PondFillText.percentage.setX(Pond.getTranslateX());
+        PondFillText.percentage.setY(Pond.getTranslateY());
 
         add(Pond);
-        add(PondFillText);
+
         ponds.add(this);
     }
 
@@ -149,59 +152,77 @@ class Clouds extends GamePaneCollection<Cloud> implements Updatable {
 }
 
 class Cloud extends GameObject implements Updatable, EventListener{
-    Ellipse Cloud;
+    Circle Cloud;
     static Clouds clouds = new Clouds();
     Random rand = new Random();
 
-    private static double pCounter;
-    GameText precipitation;
+    private double precipitationCounter;
+    GameText precipitationLabel;
     int rand_intY = rand.nextInt(200,800);
     int rand_intX = rand.nextInt(0,400);
 
     public Cloud(){
-        pCounter = 0;
-        Cloud = new Ellipse(45,45);
-        Cloud.setTranslateY(rand_intY);
-        Cloud.setTranslateX(rand_intX);
+        Cloud = new Circle(rand_intX,rand_intY,45);
         Cloud.setFill(Color.WHITE);
-
-
-        precipitation = new GameText(String.format("%.0f", pCounter));
-        precipitation.setFill(Color.BLUE);
-        precipitation.setX(Cloud.getTranslateX());
-        precipitation.setY(Cloud.getTranslateY());
-        precipitation.setScaleY(-1);
-
+        Cloud.setOpacity(1);
         add(Cloud);
-        add(precipitation);
+
+        precipitationCounter = 0;
+
+
+        precipitationLabel =
+                new GameText(String.format("%.0f", precipitationCounter)
+                        + "%");
+        precipitationLabel.percentage.setFill(Color.BLUE);
+
+        precipitationLabel.percentage.setFont(Font.font(10));
+
+        precipitationLabel.percentage.setX(Cloud.getCenterX());
+        precipitationLabel.percentage.setY(Cloud.getCenterY());
+
+
+        add(precipitationLabel);
+
+
         clouds.add(this);
         Wind.getWind().wind(this);
     }
 
-    public void incrementCloudPrecipitation(){
-        if(pCounter < 100) {
-            pCounter = pCounter + 1;
-            precipitation.setText(String.format("%.0f", pCounter));
-        }
+    public void setPrecipitationCounter(double precipitationCounter) {
+        this.precipitationCounter = precipitationCounter;
     }
 
-    public void seeding() {
-        Cloud.setFill(Color.rgb((int) (255-pCounter),
-                (int) (255-pCounter),(int) (255-pCounter)));
-        incrementCloudPrecipitation(); // Add a text class
-        //and incremenet that variation of it.
+    public double getPrecipitationCounter(){
+        return this.precipitationCounter;
     }
+
+    public void incrementCloudPrecipitation(){
+        if (getPrecipitationCounter() < 100) {
+            setPrecipitationCounter(precipitationCounter + 1);//settiming
+            precipitationLabel.setText(String.format("%.0f",
+                    getPrecipitationCounter())
+                    + "%");
+        }
+
+        Cloud.setFill(Color.rgb((int) (255 - getPrecipitationCounter()),
+                (int) (255 - getPrecipitationCounter()), (int) (255 - getPrecipitationCounter())));
+    }
+
+    public void decrementCloudPrecipitation(){
+        //set timing
+    }
+
+
 
     @Override
     public void update() {
         myTranslate.setX(myTranslate.getX()+Wind.getWind().WIND_SPEED);
-
         if (Game.getInstance().isHelicopterCollidingWithCloud(this)) {
-
-          this.seeding();
+          this.incrementCloudPrecipitation();
         }
-
+        //always be decrementing,
     }
+
     @Override
     public void updateWind(double windspeed) {
 
@@ -273,25 +294,29 @@ class Helicopter extends GameObject {
     public Helicopter(){
         this.state = new Off(this);
         isReady = false;
+
         ignitionPress = false;
         SPEED = 0;
         ANGLE = 0;
         HEADING = 0;
         FUEL = 25000;
+
+
         HelicopterBase = new HelicopterBody();
+        add(HelicopterBase);
         HeliBlade = new HelicopterBlade();
+        add(HeliBlade);
         HeliBlade.setRotate(90);
 
         fuel = new GameText("F:" + FUEL);
-        fuel.setFill(Color.YELLOW);
-        fuel.setX(400);
-        fuel.setY(30);
-        fuel.setScaleY(-1);
+        fuel.percentage.setX(400); // middle of canvas
 
+        fuel.percentage.setY(30); // helipad set.
 
+        fuel.percentage.setFill(Color.YELLOW);
+        fuel.myTranslate.setX(this.HelicopterBase.getTranslateX());
         add(fuel);
-        add(HelicopterBase);
-        add(HeliBlade);
+
     }
 
     public boolean getIsReady(){
@@ -312,7 +337,6 @@ class Helicopter extends GameObject {
     public void setPivot(double currX, double currY) {
         myRotation.setPivotX(currX+410);
         myRotation.setPivotY(currY+50);
-
     }
     public void increaseRotationLeft() {
             if(SPEED>.1 || SPEED <- .1) {
